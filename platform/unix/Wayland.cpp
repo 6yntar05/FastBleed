@@ -42,7 +42,7 @@ std::vector<int> wayland_windowing::get_buttons() {
 #else /* If this build completed whithout X11 support */
 
     //class wayland_windowing : control_impl {
-    wayland_windowing::~wayland_windowing()                     {}
+    wayland_windowing::~wayland_windowing()                 {}
     int wayland_windowing::status()                         {return -101;}
     int wayland_windowing::button(int keysym, int pressing) {return -1;}
     std::vector<int> wayland_windowing::get_buttons()       {return {};}
