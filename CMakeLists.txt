@@ -20,6 +20,6 @@ link_directories        (${Boost_LIBRARY_DIRS} ${X11_LIBRARIES})
 add_definitions         (${Boost_DEFINITIONS})
 #add_definitions        (-std=c++11)
 
-file                    (GLOB_RECURSE SRCFILES "./*.cpp")
-add_executable          (${PROJECT_NAME} ./FastBleed.cpp)
+file                    (GLOB_RECURSE SRCFILES "./platform/*.cpp")
+add_executable          (${PROJECT_NAME} ./FastBleed.cpp ${SRCFILES})
 target_link_libraries   (${PROJECT_NAME} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${X11_LIBRARIES})
