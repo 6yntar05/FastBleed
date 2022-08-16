@@ -33,14 +33,14 @@ t_timings calculate_timings(float cps, float relation);
 
 int main(int argc, char* argv[]){
     parse_args(argc, argv);
-    std::shared_ptr<cirno::control_impl> control = cirno::init();                   // Pick platform-non-specifically abstraction
+    std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
 
     t_timings timings = calculate_timings(cps, relation);                           // Press delays around CPS value
 
     std::random_device rd; std::mt19937 gen_seed(rd());
     std::uniform_int_distribution<> entropy(-entropy_variation, entropy_variation); // Introduces randomness in the timings of pressing
 
-    int status = control->status();
+    int status = control->init();
     switch (status) {
         case -405:
             std::cerr << "This subsystem is now implemented.\n";

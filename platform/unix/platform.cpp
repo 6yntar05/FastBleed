@@ -21,16 +21,16 @@ std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
         default:
             class plug_windowing : public control_impl{
             public:
-                ~plug_windowing()                          {}
-                int status()                               override {return -100;}
-                int button(int keysym, int pressing)       override {return -1;}
-                std::vector<int> get_buttons()             override {return {};}
+                ~plug_windowing()                       {}
+                int init()                              override {return -100;}
+                int button(int keysym, int pressing)    override {return -1;}
+                std::vector<int> get_buttons()          override {return {};}
             };
             return std::make_shared<plug_windowing>();
     };
 };
 
-std::shared_ptr<control_impl> init() {
+std::shared_ptr<control_impl> get_platform() {
     user_windowing windowing;
     if (std::getenv("WAYLAND_DISPLAY")) {
         return windowing.make_api(2);

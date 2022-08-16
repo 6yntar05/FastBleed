@@ -1,12 +1,10 @@
-#include "../../properties.hpp"
 #include <vector>
-#include <memory>
 #include "X11.hpp"
+#include "../../properties.hpp"
+
 #ifdef USE_X11
     #include <X11/Xlib.h>
     #include <X11/extensions/XTest.h>
-#else
-    // empty
 #endif
 
 namespace cirno {
@@ -18,7 +16,7 @@ x11_windowing::~x11_windowing() {
     XCloseDisplay(x11_windowing::display);
 }
 
-int x11_windowing::status() {
+int x11_windowing::init() {
     x11_windowing::display = XOpenDisplay(NULL); //Take out!
     if (x11_windowing::display == NULL){
         return -1;
@@ -43,7 +41,7 @@ std::vector<int> x11_windowing::get_buttons() {
 
     //class x11_windowing : control_impl {
     x11_windowing::~x11_windowing()                     {}
-    int x11_windowing::status()                         {return -102;}
+    int x11_windowing::init()                         {return -102;}
     int x11_windowing::button(int keysym, int pressing) {return -1;}
     std::vector<int> x11_windowing::get_buttons()       {return {};}
     //} class x11_windowing : control_impl
