@@ -42,9 +42,6 @@ int main(int argc, char* argv[]){
 
     int status = control->init();
     switch (status) {
-        case -405:
-            std::cerr << "This subsystem is now implemented.\n";
-            break;
         case -100:
             std::cerr << "No displays found.\n";
             break;
@@ -55,6 +52,8 @@ int main(int argc, char* argv[]){
             std::cerr << "This build completed without Wayland support.\n";
             break;
     }; if (status < 0) exit(1);
+
+    control->get_buttons();
 
     signal(SIGINT, signal_handler);
     

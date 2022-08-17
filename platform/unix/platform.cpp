@@ -1,11 +1,5 @@
-#include <iostream>
 #include <vector>
-#include <string.h>    //depr.
-#include <chrono>
-#include <thread>
 #include <memory>
-#include <X11/Xlib.h>
-#include <X11/extensions/XTest.h>
 #include "platform.hpp"
 
 namespace cirno {

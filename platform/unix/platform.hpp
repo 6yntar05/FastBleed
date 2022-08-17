@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include <X11/Xlib.h>
+#ifdef USE_X11
+    #include <X11/Xlib.h>
+#endif
 
 namespace cirno {
 class control_impl {
@@ -14,7 +16,9 @@ public:
 
 class x11_windowing : public control_impl {
 public:
-    Display *display;
+    #ifdef USE_X11
+        Display *display;
+    #endif
     ~x11_windowing();
     int init();
     int button(int keysym, int pressing);

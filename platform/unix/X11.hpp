@@ -1,11 +1,9 @@
+// Imported in X11.cpp. USE_X11 taken from there
 #include <vector>
-#define USE_X11         // WTF fix it
 
 #ifdef USE_X11
     #include <X11/Xlib.h>
     #include <X11/extensions/XTest.h>
-#else
-    #define Display void
 #endif
 
 namespace cirno {
@@ -19,7 +17,9 @@ public:
 
 class x11_windowing : public control_impl {
 public:
-    Display *display;
+    #ifdef USE_X11
+        Display *display;
+    #endif
     ~x11_windowing();
     int init();
     int button(int keysym, int pressing);
