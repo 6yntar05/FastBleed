@@ -4,6 +4,7 @@
 #include <random>
 #include <thread>
 #include <iostream>
+#include <functional>
 #include <boost/program_options.hpp>
 #include "ui/event.hpp"                                 // cirno::error()
 #include "properties.hpp"                               // Default values
@@ -53,22 +54,25 @@ int main(int argc, char* argv[]){
             break;
     }; if (status < 0) exit(1);
 
-    control->get_buttons();
+    //signal(SIGINT, signal_handler);
 
-    signal(SIGINT, signal_handler);
-    
     #ifdef DEBUG
         debug_bench(control, 1);
     #endif
 
+    //control->handle_button(8, true);
+    //control->handle_button(9);
+
+    /*
     while(!sigint_flag){
-        control->button(1, true);
+        control->action_button(1, true);
         std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-        control->button(1, false);
+        control->action_button(1, false);
         std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
     };
-    
-    control->~control_impl();
+    */
+
+    //control->~control_impl();
 
     return 0;
 }
@@ -124,7 +128,7 @@ t_timings calculate_timings(float cps, float relation) {
     }
 
     if ( best == total_click_time ) 
-        cirno::error("Insorrect timings. Fallback relation values are used.");
+        cirno::error("Incorrect timings. Fallback relation values are used.");
 
     #ifdef DEBUG
         std::cerr << "[DEBUG] calculate_timings() => " << ret.hold_time << "/" << ret.release_time << std::endl;
@@ -135,9 +139,9 @@ t_timings calculate_timings(float cps, float relation) {
 #ifdef DEBUG
     void debug_bench(std::shared_ptr<cirno::control_impl> control, int button){
         auto start_time = std::chrono::steady_clock::now();
-        control->button(button,true);
+        control->action_button(button,true);
         auto stop_time = std::chrono::steady_clock::now();
-        control->button(button,false);
+        control->action_button(button,false);
         auto elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(stop_time - start_time);
         std::cout << "[DEBUG] Benchmark click time: " << elapsed_ns.count() << " ns\n";
     }

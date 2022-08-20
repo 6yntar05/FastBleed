@@ -1,12 +1,13 @@
+#include <iostream>
 #include <vector>
 #include <memory>
 #include "platform.hpp"
 
 namespace cirno {
+
 std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
     switch (picked_api){
         case 1:
-            //return std::make_shared<wayland_windowing>();
             return std::make_shared<x11_windowing>();
             break;
         case 2:
@@ -15,10 +16,10 @@ std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
         default:
             class plug_windowing : public control_impl{
             public:
-                ~plug_windowing()                       {}
-                int init()                              override {return -100;}
-                int button(int keysym, int pressing)    override {return -1;}
-                std::vector<int> get_buttons()          override {return {};}
+                ~plug_windowing()                               {}
+                int init()                                      override {return -100;}
+                int action_button(int keysym, bool pressing)    override {return -1;}
+                int handle_button(int keysym, bool intercept)   override {return -1;}
             };
             return std::make_shared<plug_windowing>();
     };
@@ -34,4 +35,5 @@ std::shared_ptr<control_impl> get_platform() {
         return windowing.make_api(0);
     }
 }
+
 }//namespace cirno

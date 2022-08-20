@@ -10,20 +10,20 @@ namespace cirno {
 
 #ifdef USE_WAYLAND
 
-//class wayland_windowing : control_impl {
-wayland_windowing::~wayland_windowing() {}
-int wayland_windowing::init()                           {return -101;}
-int wayland_windowing::button(int keysym, int pressing) {return -1;}
-std::vector<int> wayland_windowing::get_buttons()       {return {};}
-//} class wayland_windowing : control_impl
+    //class wayland_windowing : control_impl {
+    wayland_windowing::~wayland_windowing()                             {}
+    int wayland_windowing::init()                                       {return -101;}
+    int wayland_windowing::action_button(int keysym, bool pressing)     {return -1;}
+    int wayland_windowing::handle_button(int keysym, bool intercept)    {return -1;}
+    //} class wayland_windowing : control_impl
 
 #else /* If this build completed whithout Wayland support */
 
     //class wayland_windowing : control_impl {
-    wayland_windowing::~wayland_windowing()                 {}
-    int wayland_windowing::init()                           {return -101;}
-    int wayland_windowing::button(int keysym, int pressing) {return -1;}
-    std::vector<int> wayland_windowing::get_buttons()       {return {};}
+    wayland_windowing::~wayland_windowing()                             {}
+    int wayland_windowing::init()                                       {return -101;}
+    int wayland_windowing::action_button(int keysym, bool pressing)     {return -1;}
+    int wayland_windowing::handle_button(int keysym, bool intercept)    {return -1;}
     //} class wayland_windowing : control_impl
 
 #endif

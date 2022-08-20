@@ -9,20 +9,21 @@
 namespace cirno {
 class control_impl {
 public:
-    virtual ~control_impl()                         = default;
-    virtual int init()                              = 0;
-    virtual int button(int keysym, int pressing)    = 0;
-    virtual std::vector<int> get_buttons()          = 0;
+    virtual ~control_impl()                                 = default;
+    virtual int init()                                      = 0;
+    virtual int action_button(int keysym, bool pressing)    = 0;
+    virtual int handle_button(int keysym, bool intercept)   = 0;
 };
 
 class x11_windowing : public control_impl {
-public:
+private:
     #ifdef USE_X11
         Display *display;
     #endif
+public:
     ~x11_windowing();
     int init();
-    int button(int keysym, int pressing);
-    std::vector<int> get_buttons();
+    int action_button(int keysym, bool pressing);
+    int handle_button(int keysym, bool intercept);
 };
 }
