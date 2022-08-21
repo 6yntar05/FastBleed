@@ -8,8 +8,9 @@
 
 struct s_event_decl {
     unsigned int count;
-    unsigned int *button;
+    unsigned int *ev_button;
     bool *flag;
+    unsigned int *act_button;
 };
 
 namespace cirno {

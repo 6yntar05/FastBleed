@@ -26,8 +26,9 @@ int  parse_args(int argc, char* argv[]);
 
 struct s_event_decl {
     unsigned int count;
-    unsigned int *button;
+    unsigned int *ev_button;
     bool *flag;
+    unsigned int *act_button;
 };
 
 typedef struct s_timings {
@@ -71,20 +72,24 @@ int main(int argc, char* argv[]) {
     s_event_decl events_decl;
 
     events_decl.count = 2;
-    events_decl.button = new unsigned int[events_decl.count];
+    events_decl.ev_button = new unsigned int[events_decl.count];
     events_decl.flag = new bool[events_decl.count];
+    events_decl.act_button = new unsigned int[events_decl.count];
 
-    events_decl.button[0] = 9;
-    events_decl.button[1] = 8;
+    events_decl.ev_button[0] = 8;
+    events_decl.ev_button[1] = 9;
     events_decl.flag[0] = false;
     events_decl.flag[1] = false;
+    events_decl.act_button[0] = 1;
+    events_decl.act_button[1] = 3;
     
     std::thread click_a_thread(do_click, control, 3, timings, events_decl);
     click_a_thread.detach();
 
     std::cerr << control->handle_events(&events_decl) << std::endl;
 
-    free(events_decl.button);
+    free(events_decl.ev_button);
+    free(events_decl.flag);
     return 0;
 }
 
@@ -158,24 +163,23 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
 }
 
 void do_click(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events) {
-    std::random_device rd; std::mt19937 gen_seed(rd());                    // !!
+    std::random_device rd; std::mt19937 gen_seed(rd());                                             // !!
     std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation); // Introduces randomness in the timings of pressing
+    bool cooldown = false;
     while (true) {
-        if (events.flag[0]) {
-            control->action_button(3, true);
-            std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-            control->action_button(3, false);
-            std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
+        for (unsigned int i=0; i<events.count; i++) {
+            if (events.flag[i]) {
+                control->action_button(events.act_button[i], true);
+                std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
+                control->action_button(events.act_button[i], false);
+                std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
+                cooldown = true;
+            }
         }
-        if (events.flag[1]) {
-            control->action_button(1, true);
-            std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-            control->action_button(1, false);
-            std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed) ));
-        }
-        if (!events.flag[0] || !events.flag[1]) {
+        if (!cooldown) {
             std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time));
         }
+        cooldown = false;
     }
 }
 

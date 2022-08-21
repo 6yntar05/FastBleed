@@ -61,7 +61,7 @@ void eventCallback(XPointer priv, XRecordInterceptData *data) {
     switch (type) {
         case ButtonPress:
             for (unsigned int i=0; i<events.count; i++) {
-                if (button == events.button[i]) {
+                if (button == events.ev_button[i]) {
                     if (p->mmoved) p->mmoved=0;
                     if (p->Status2<0) p->Status2=0;
                     p->Status2++;
@@ -72,7 +72,7 @@ void eventCallback(XPointer priv, XRecordInterceptData *data) {
 
         case ButtonRelease:
             for (unsigned int i=0; i<events.count; i++) {
-                if (button == events.button[i]) {
+                if (button == events.ev_button[i]) {
                     if (p->mmoved) p->mmoved=0;
                     if (p->Status2<0) p->Status2=0;
                     p->Status2++;
