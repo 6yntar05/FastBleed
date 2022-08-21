@@ -5,6 +5,7 @@
     #include <X11/Xlib.h>   // For "Display" and "Window" types
 #endif
 
+extern bool override_wayland, override_xorg;
 struct s_event_decl;
 
 namespace cirno {

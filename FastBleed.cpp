@@ -15,6 +15,7 @@ float relation          = c_relation;                   // Hold time / Release t
 unsigned int entropy_variation = c_entropy_variation;   // Introduces randomness in the timings of pressing
 /*/*/
 
+bool override_wayland, override_xorg;
 namespace po = boost::program_options;
 int parse_args(int argc, char* argv[]);
 
@@ -108,14 +109,26 @@ int parse_args(int argc, char* argv[]) {
         ("cps,c", po::value<float>(&cps), "Clicks Per Second: float (0.0:500.0)")
         ("relation,r", po::value<float>(&relation), "'Hold time'/'Release time' relation: float (0.0:500/cps)")
         //("entropy,e", po::value<unsigned int>(&entropy_variation), "Entropy range (value+-delays): uint [0:?)")
+        #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
+            ("xorg,x", "Override Xorg")
+            ("wayland,w", "Override Wayland")
+        #endif
     ;
-
     po::variables_map args;
     po::store(po::parse_command_line(argc, argv, desc), args);
     po::notify(args);
 
+    #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
+        if (args.count("xorg")) {
+            override_xorg = true;
+        }
+        if (args.count("wayland")) {
+            override_wayland = true;
+        }
+    #endif
+
     if (args.count("help")) {
-        std::cout << desc << "\n";
+        std::cout << desc << std::endl;
         exit(0);
     }
 
