@@ -14,7 +14,7 @@ namespace cirno {
     wayland_windowing::~wayland_windowing()                             {}
     int wayland_windowing::init()                                       {return -101;}
     int wayland_windowing::action_button(int keysym, bool pressing)     {return -1;}
-    int wayland_windowing::handle_events(int keysym, bool intercept)    {return -1;}
+    int wayland_windowing::handle_events(struct s_event_decl *events_decl)    {return -1;}
     //} class wayland_windowing : control_impl
 
 #else /* If this build completed whithout Wayland support */
@@ -23,7 +23,7 @@ namespace cirno {
     wayland_windowing::~wayland_windowing()                             {}
     int wayland_windowing::init()                                       {return -101;}
     int wayland_windowing::action_button(int keysym, bool pressing)     {return -1;}
-    int wayland_windowing::handle_events(int keysym, bool intercept)    {return -1;}
+    int wayland_windowing::handle_events(struct s_event_decl *events_decl)    {return -1;}
     //} class wayland_windowing : control_impl
 
 #endif

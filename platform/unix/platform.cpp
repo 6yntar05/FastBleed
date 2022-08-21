@@ -4,7 +4,6 @@
 #include "platform.hpp"
 
 namespace cirno {
-
 // Pattern "FACTORY" ^.^
 std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
     switch (picked_api){
@@ -17,10 +16,10 @@ std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
         default:
             class plug_windowing : public control_impl{
             public:
-                ~plug_windowing()                               {}
-                int init()                                      override {return -100;}
-                int action_button(int keysym, bool pressing)    override {return -1;}
-                int handle_events(int keysym, bool intercept)   override {return -1;}
+                ~plug_windowing()                                   {}
+                int init()                                          override {return -100;}
+                int action_button(int keysym, bool pressing)        override {return -1;}
+                int handle_events(struct s_event_decl *events_decl) override {return -1;}
             };
             return std::make_shared<plug_windowing>();
     };
@@ -36,5 +35,4 @@ std::shared_ptr<control_impl> get_platform() {
         return windowing.make_api(0);
     }
 }
-
 }//namespace cirno

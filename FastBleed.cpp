@@ -25,7 +25,8 @@ namespace po = boost::program_options;
 int  parse_args(int argc, char* argv[]);
 
 struct s_event_decl {
-    unsigned int button;
+    unsigned int count;
+    unsigned int *button;
     bool *flag;
 };
 
@@ -36,7 +37,7 @@ typedef struct s_timings {
 } t_timings;
 t_timings calculate_timings(float cps, float relation, unsigned int entropy_variation);
 
-void do_click(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings);
+void do_click(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events);
 
 #ifdef DEBUG
     void debug_bench(std::shared_ptr<cirno::control_impl> control, int button);
@@ -61,24 +62,29 @@ int main(int argc, char* argv[]) {
     }; if (status < 0) exit(1);
 
     #ifdef DEBUG
-        //debug_bench(control, 1);
+        debug_bench(control, 1);
     #endif
 
     t_timings timings = calculate_timings(cps, relation, entropy_variation);                           // Calculate delays around CPS/Relation value
+    
     // Declare events
-    /*
-    s_event_decl events_decl[2];
-    events_decl[0].button = 8;
-    events_decl[0].flag = &glob_a_enabled;
+    s_event_decl events_decl;
 
-    events_decl[1].button = 9;
-    events_decl[1].flag = &glob_b_enabled;
-    */
-    std::thread click_a_thread(do_click, control, 3, timings);
+    events_decl.count = 2;
+    events_decl.button = new unsigned int[events_decl.count];
+    events_decl.flag = new bool[events_decl.count];
+
+    events_decl.button[0] = 9;
+    events_decl.button[1] = 8;
+    events_decl.flag[0] = false;
+    events_decl.flag[1] = false;
+    
+    std::thread click_a_thread(do_click, control, 3, timings, events_decl);
     click_a_thread.detach();
 
-    std::cerr << control->handle_events(8, true/*, std::function...*/) << std::endl;
+    std::cerr << control->handle_events(&events_decl) << std::endl;
 
+    free(events_decl.button);
     return 0;
 }
 
@@ -151,23 +157,23 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
     return ret;
 }
 
-void do_click(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings) {
+void do_click(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events) {
     std::random_device rd; std::mt19937 gen_seed(rd());                    // !!
     std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation); // Introduces randomness in the timings of pressing
     while (true) {
-        if (glob_a_enabled) {
+        if (events.flag[0]) {
             control->action_button(3, true);
             std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
             control->action_button(3, false);
             std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
         }
-        if (glob_b_enabled) {
+        if (events.flag[1]) {
             control->action_button(1, true);
             std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
             control->action_button(1, false);
             std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed) ));
         }
-        if (!glob_a_enabled || !glob_b_enabled) {
+        if (!events.flag[0] || !events.flag[1]) {
             std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time));
         }
     }

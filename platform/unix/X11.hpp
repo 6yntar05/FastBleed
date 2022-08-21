@@ -6,13 +6,19 @@
     #include <X11/extensions/XTest.h>
 #endif
 
+struct s_event_decl {
+    unsigned int count;
+    unsigned int *button;
+    bool *flag;
+};
+
 namespace cirno {
 class control_impl {
 public:
-    virtual ~control_impl()                                 = default;
-    virtual int init()                                      = 0;
-    virtual int action_button(int keysym, bool pressing)    = 0;
-    virtual int handle_events(int keysym, bool intercept)   = 0;
+    virtual ~control_impl()                                     = default;
+    virtual int init()                                          = 0;
+    virtual int action_button(int keysym, bool pressing)        = 0;
+    virtual int handle_events(struct s_event_decl *events_decl) = 0;
 };
 
 class x11_windowing : public control_impl {
@@ -27,6 +33,6 @@ public:
     ~x11_windowing();
     int init();
     int action_button(int keysym, bool pressing);
-    int handle_events(int keysym, bool intercept);
+    int handle_events(struct s_event_decl *events_decl);
 };
 }

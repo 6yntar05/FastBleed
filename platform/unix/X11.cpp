@@ -32,101 +32,56 @@ typedef struct{
 	int Status1, Status2, x, y, mmoved, doit;
 	Display *lclDisplay, *recDisplay;
 	XRecordContext rc;
+    struct s_event_decl events_decl;
 } Priv;
 
-inline void eventCallback(XPointer priv, XRecordInterceptData *d) {
+void eventCallback(XPointer priv, XRecordInterceptData *data) {
     Priv *p=(Priv *) priv;
-    unsigned int *ud4, tstamp, wroot, wevent, wchild, type, detail;
-    unsigned char *ud1, type1, detail1, samescreen;
+
+    unsigned int *ud4, tstamp, wroot, wevent, wchild, type, button;
+    unsigned char *ud1;
     unsigned short *ud2, seq;
     short *d2, rootx, rooty, eventx, eventy, kstate;
 
-    if (d->category != XRecordFromServer || p->doit == 0) {
-        XRecordFreeData(d);
+    struct s_event_decl events = p->events_decl;
+
+    if (data->category != XRecordFromServer || p->doit == 0) {
+        XRecordFreeData(data);
         return;
     }
 
-    ud1=(unsigned char *)d->data;
-    ud2=(unsigned short *)d->data;
-    d2=(short *)d->data;
-    ud4=(unsigned int *)d->data;
+    ud1=(unsigned char *)data->data;
+    ud2=(unsigned short *)data->data;
+    d2=(short *)data->data;
+    ud4=(unsigned int *)data->data;
 
-    type1=ud1[0]&0x7F; type=type1;
-    detail1=ud1[1]; detail=detail1;
-    seq=ud2[1];
-    tstamp=ud4[1];
-    wroot=ud4[2];
-    wevent=ud4[3];
-    wchild=ud4[4];
-    rootx=d2[10];
-    rooty=d2[11];
-    eventx=d2[12];
-    eventy=d2[13];
-    kstate=d2[14];
-    samescreen=ud1[30];
+    type=ud1[0]&0x7F;
+    button=ud1[1];
 
-    if (p->Status1) {
-        p->Status1--;
-        if (type==KeyRelease) {
-            std::cerr << "- Skipping stale KeyRelease event. " << p->Status1 << std::endl;
-            XRecordFreeData(d);
-            return;
-        } else {
-            p->Status1=0;
-        }
-    }
-    if (p->x==-1 && p->y==-1 && p->mmoved==0 && type!=MotionNotify) {
-        std::cerr << "- Please move the mouse before any other event to synchronize pointer" << std::endl;
-        std::cerr << "  coordinates! This event is now ignored!" << std::endl;
-        XRecordFreeData(d);
-        return;
-    }
-
-    switch(type) {
+    switch (type) {
         case ButtonPress:
-            if (detail == 9) {
-                if (p->mmoved) {
-                    std::cerr << "+MotionNotify: " << p->x << ":" << p->y << std::endl;
-                    p->mmoved=0;
+            for (unsigned int i=0; i<events.count; i++) {
+                if (button == events.button[i]) {
+                    if (p->mmoved) p->mmoved=0;
+                    if (p->Status2<0) p->Status2=0;
+                    p->Status2++;
+                    events.flag[i] = true;
                 }
-                if (p->Status2<0) p->Status2=0;
-                p->Status2++;
-                std::cerr << "ButtonPress: " << detail << std::endl;
-                glob_a_enabled = true;
-            } else if (detail == 8) {
-                if (p->mmoved) {
-                    std::cerr << "+MotionNotify: " << p->x << ":" << p->y << std::endl;
-                    p->mmoved=0;
-                }
-                if (p->Status2<0) p->Status2=0;
-                p->Status2++;
-                std::cerr << "ButtonPress: " << detail << std::endl;
-                glob_b_enabled = true;
             }
             break;
 
         case ButtonRelease:
-            if (detail == 9) {
-                if (p->mmoved) {
-                    std::cerr << "+MotionNotify: " << p->x << ":" << p->y << std::endl;
-                    p->mmoved=0;
+            for (unsigned int i=0; i<events.count; i++) {
+                if (button == events.button[i]) {
+                    if (p->mmoved) p->mmoved=0;
+                    if (p->Status2<0) p->Status2=0;
+                    p->Status2++;
+                    events.flag[i] = false;
                 }
-                if (p->Status2<0) p->Status2=0;
-                p->Status2--;
-                std::cerr << "ButtonRelease: " << detail << std::endl;
-                glob_a_enabled = false;
-            } else if (detail == 8) {
-                if (p->mmoved) {
-                    std::cerr << "+MotionNotify: " << p->x << ":" << p->y << std::endl;
-                    p->mmoved=0;
-                }
-                if (p->Status2<0) p->Status2=0;
-                p->Status2--;
-                std::cerr << "ButtonRelease: " << detail << std::endl;
-                glob_b_enabled = false;
             }
             break;
     }
+    XRecordFreeData(data);
 }
 
 //class x11_windowing : control_impl {
@@ -160,9 +115,9 @@ int x11_windowing::action_button(int keysym, bool pressing) {
     return 0;
 }
 
-int x11_windowing::handle_events(int keysym, bool intercept) {
+int x11_windowing::handle_events(struct s_event_decl *events_decl) {
     // Taken from alvatar/xmacro xmacrorec2
-    Window       Root, rRoot, rChild;
+    Window Root, rRoot, rChild;
     XRecordContext rc;
     XRecordRange *rr;
     XRecordClientSpec rcs;
@@ -185,30 +140,28 @@ int x11_windowing::handle_events(int keysym, bool intercept) {
     rc=XRecordCreateContext(x11_windowing::recDisplay, 0, &rcs, 1, &rr, 1);
     if (!rc) {return -2;}
 
-    priv.x=rootx;
-    priv.y=rooty;
-    priv.mmoved=1;
-    priv.Status2=0;
-    priv.Status1=2;
-    priv.doit=1;
-    priv.lclDisplay=x11_windowing::lclDisplay;
-    priv.recDisplay=x11_windowing::recDisplay;
-    priv.rc=rc;
+    priv.x              = rootx;
+    priv.y              = rooty;
+    priv.mmoved         = 1;
+    priv.Status2        = 0;
+    priv.Status1        = 2;
+    priv.doit           = 1;
+    priv.lclDisplay     = x11_windowing::lclDisplay;
+    priv.recDisplay     = x11_windowing::recDisplay;
+    priv.rc             = rc;
+    priv.events_decl    = *events_decl;
     
     if (!XRecordEnableContextAsync(recDisplay, rc, eventCallback, (XPointer)&priv)) {
         return -3;
     }
-    // Start thread
 
     while (priv.doit) {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
         XRecordProcessReplies(recDisplay);
     }
 
-    sret=XRecordDisableContext(lclDisplay, rc);
-    if (!sret) return -4;
-    sret=XRecordFreeContext(lclDisplay, rc);
-    if (!sret) return -5;
+    XRecordDisableContext(lclDisplay, rc);
+    XRecordFreeContext(lclDisplay, rc);
     XFree(rr);
 
     return 0;
