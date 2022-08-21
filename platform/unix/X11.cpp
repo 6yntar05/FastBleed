@@ -113,32 +113,27 @@ namespace cirno {
     }
 
     int x11_windowing::handle_events(struct s_event_decl *events_decl) {
-        // Taken from alvatar/xmacro xmacrorec2
+        // Partly taken from alvatar/xmacro
         Window Root, rRoot, rChild;
         XRecordContext rc;
         XRecordRange *rr;
         XRecordClientSpec rcs;
         Priv priv;
-        int rootx=0, rooty=0, winx=0, winy=0;
-        unsigned int mmask;
-        int sret;
-        //if (!XQueryPointer(x11_windowing::lclDisplay, x11_windowing::rootWindow,
-        //                &rRoot, &rChild, &rootx, &rooty, &winx, &winy, &mmask)) {
-        //    return -1;
-        //}
+
         rr = XRecordAllocRange();
         if (!rr) {
             error("Failed to call XRecordAllocRange()");
             return -1;
         }
+
         rr->device_events.first=KeyPress;
         rr->device_events.last=MotionNotify;
         rcs=XRecordAllClients;
         rc=XRecordCreateContext(x11_windowing::recDisplay, 0, &rcs, 1, &rr, 1);
         if (!rc) {return -2;}
 
-        priv.x              = rootx;
-        priv.y              = rooty;
+        priv.x              = 0;
+        priv.y              = 0;
         priv.mmoved         = 1;
         priv.Status2        = 0;
         priv.Status1        = 2;

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include "../../ui/event.hpp"
 #include "platform.hpp"
 
 namespace cirno {
@@ -28,7 +29,13 @@ std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
 std::shared_ptr<control_impl> get_platform() {
     user_windowing windowing;
     if (std::getenv("WAYLAND_DISPLAY")) {
-        return windowing.make_api(2);
+        #ifdef USE_WAYLAND
+            return windowing.make_api(2);
+        #else
+            warn("This build completed without Wayland support. Overriding X11.");
+            return windowing.make_api(1);
+        #endif
+
     } else if(std::getenv("DISPLAY")) {
         return windowing.make_api(1);
     } else {
