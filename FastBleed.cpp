@@ -5,31 +5,25 @@
 #include <iostream>
 #include <functional>
 #include <boost/program_options.hpp>
-#include "ui/event.hpp"                           // cirno::error()
-#include "properties.hpp"                         // Default values
-#include "platform/platform_picker.hpp"           // cirno::init() returns platform-non-specifically abstraction
+#include "ui/event.hpp"                                 // cirno::error()/warn()
+#include "properties.hpp"                               // Default values; Build properties
+#include "platform/platform_picker.hpp"                 // cirno::init() returns platform-non-specifically abstraction
 
-float cps               = c_cps;                  // Click Per Second
-float relation          = c_relation;             // Hold time / Release time
-unsigned int entropy_variation = c_entropy_variation;    // Introduces randomness in the timings of pressing
-// = Default values from "properties.hpp"
-
-bool sigint_flag(false);
-
-extern bool glob_a_enabled;
-bool glob_a_enabled = false;
-extern bool glob_b_enabled;
-bool glob_b_enabled = false;
+/*************[Default values]*************/
+float cps               = c_cps;                        // Click Per Second
+float relation          = c_relation;                   // Hold time / Release time
+unsigned int entropy_variation = c_entropy_variation;   // Introduces randomness in the timings of pressing
+/*/*/
 
 namespace po = boost::program_options;
-int  parse_args(int argc, char* argv[]);
+int parse_args(int argc, char* argv[]);
 
 struct s_event_decl {
     unsigned int count;
     unsigned int *ev_button;
     bool *flag;
     unsigned int *act_button;
-};
+}; // Structure of information about single macro
 
 typedef struct s_timings {
     int hold_time;
@@ -38,7 +32,7 @@ typedef struct s_timings {
 } t_timings;
 t_timings calculate_timings(float cps, float relation, unsigned int entropy_variation);
 
-void do_click(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events);
+void handle_actions(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events);
 
 #ifdef DEBUG
     void debug_bench(std::shared_ptr<cirno::control_impl> control, int button);
@@ -48,16 +42,18 @@ int main(int argc, char* argv[]) {
     parse_args(argc, argv);
 
     std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
-
-    int status = control->init();
+    int status = control->init();                                                   // Initialize implementation
     switch (status) {
+        // Generic:
         case -100:
             std::cerr << "No displays found.\n";
             break;
-        case -102:
+
+        // Unix:
+        case -202:
             std::cerr << "This build completed without X11 support.\n";
             break;
-        case -101:
+        case -201:
             std::cerr << "This build completed without Wayland support.\n";
             break;
     }; if (status < 0) exit(1);
@@ -66,30 +62,42 @@ int main(int argc, char* argv[]) {
         debug_bench(control, 1);
     #endif
 
-    t_timings timings = calculate_timings(cps, relation, entropy_variation);                           // Calculate delays around CPS/Relation value
+    t_timings timings = calculate_timings(cps, relation, entropy_variation);        // Calculate delays around CPS/Relation value
     
-    // Declare events
+ /*************[Declare events]*************/
     s_event_decl events_decl;
 
     events_decl.count = 2;
     events_decl.ev_button = new unsigned int[events_decl.count];
     events_decl.flag = new bool[events_decl.count];
+    std::fill(events_decl.flag, events_decl.flag+events_decl.count, false);
     events_decl.act_button = new unsigned int[events_decl.count];
 
+    // Macro 1
     events_decl.ev_button[0] = 8;
-    events_decl.ev_button[1] = 9;
-    events_decl.flag[0] = false;
-    events_decl.flag[1] = false;
     events_decl.act_button[0] = 1;
+
+    // Macro 2
+    events_decl.ev_button[1] = 9;
     events_decl.act_button[1] = 3;
-    
-    std::thread click_a_thread(do_click, control, 3, timings, events_decl);
-    click_a_thread.detach();
 
-    std::cerr << control->handle_events(&events_decl) << std::endl;
+    // For some reason expandable ._.
+    // Why did I then cut KeyPressing from Xorg impl.??? Ok later
+ /*/*/
 
-    free(events_decl.ev_button);
-    free(events_decl.flag);
+    // Start actions handler thread
+    std::thread actions_thread(handle_actions, control, 3, timings, events_decl);
+    actions_thread.detach();
+
+    // Call events handler
+    if (control->handle_events(&events_decl) != 0) {
+        std::cerr << "Something goes wrong! Exiting...\n";
+        exit(1);
+    }
+
+    delete[] events_decl.ev_button;
+    delete[] events_decl.flag;
+    delete[] events_decl.act_button;
     return 0;
 }
 
@@ -162,10 +170,12 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
     return ret;
 }
 
-void do_click(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events) {
-    std::random_device rd; std::mt19937 gen_seed(rd());                                             // !!
-    std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation); // Introduces randomness in the timings of pressing
-    bool cooldown = false;
+void handle_actions(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events) {
+    std::random_device rd; std::mt19937 gen_seed(rd());
+    std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation);
+    // ^ Introduces randomness in the timings of pressing. Makes clicks more natural. ^
+
+    bool cooldown = false; // If nothing needs to be done
     while (true) {
         for (unsigned int i=0; i<events.count; i++) {
             if (events.flag[i]) {

@@ -35,4 +35,5 @@ std::shared_ptr<control_impl> get_platform() {
         return windowing.make_api(0);
     }
 }
+
 }//namespace cirno

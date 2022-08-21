@@ -2,12 +2,13 @@
 #include <vector>
 #include <memory>
 #ifdef USE_X11
-    #include <X11/Xlib.h>
+    #include <X11/Xlib.h>   // For "Display" and "Window" types
 #endif
 
 struct s_event_decl;
 
 namespace cirno {
+
 class control_impl {
 public:
     virtual ~control_impl()                                     = default;
