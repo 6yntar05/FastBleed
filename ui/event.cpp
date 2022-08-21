@@ -1,11 +1,24 @@
+#include "../properties.hpp"
 #include <iostream>
 #include <string>
 
+#ifdef COLORS
+    #define CLR "\033[0m"
+    #define RED "\033[31m"
+    #define YEL "\033[33m"
+    #define BOLD "\033[1m"
+#else
+    #define CLR ""
+    #define RED ""
+    #define YEL ""
+    #define BOLD ""
+#endif
+
 namespace cirno {
     void error(std::string msg){
-        // if cli:
-            std::cerr << "[EROOR] " << msg << std::endl;
-        // if gui:
-            // Not implemented
+        std::cerr << "["<<RED<<BOLD<<"ERROR"<<CLR<<"] " << BOLD<<msg<<CLR << std::endl;
+    }
+    void warn(std::string msg){
+        std::cerr << "["<<YEL<<BOLD<<"WARN!"<<CLR<<"] " << BOLD<<msg<<CLR << std::endl;
     }
 }

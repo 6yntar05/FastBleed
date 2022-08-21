@@ -5,6 +5,7 @@
 
 namespace cirno {
 
+// Pattern "FACTORY" ^.^
 std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
     switch (picked_api){
         case 1:
@@ -19,7 +20,7 @@ std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
                 ~plug_windowing()                               {}
                 int init()                                      override {return -100;}
                 int action_button(int keysym, bool pressing)    override {return -1;}
-                int handle_button(int keysym, bool intercept)   override {return -1;}
+                int handle_events(int keysym, bool intercept)   override {return -1;}
             };
             return std::make_shared<plug_windowing>();
     };
