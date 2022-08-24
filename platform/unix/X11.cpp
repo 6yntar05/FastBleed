@@ -9,7 +9,7 @@
 #include <iostream>
 #include <functional>
 #include "X11.hpp"
-#include "../../ui/event.hpp"
+#include "../../ui/feedback.hpp"
 
 #ifdef USE_X11
     #include <X11/X.h>
@@ -33,35 +33,28 @@ namespace cirno {
     } Priv;
 
     void eventCallback(XPointer priv, XRecordInterceptData *data) {
-        Priv *p=(Priv *) priv;
+        // Partly taken from alvatar/xmacro
+        Priv *heap=(Priv *) priv;
+        unsigned int type, button;
+        unsigned char *char_data;
 
-        unsigned int *ud4, tstamp, wroot, wevent, wchild, type, button;
-        unsigned char *ud1;
-        unsigned short *ud2, seq;
-        short *d2, rootx, rooty, eventx, eventy, kstate;
+        struct s_event_decl events = heap->events_decl;
 
-        struct s_event_decl events = p->events_decl;
-
-        if (data->category != XRecordFromServer || p->doit == 0) {
+        if (data->category != XRecordFromServer || heap->doit == 0) {
             XRecordFreeData(data);
             return;
         }
 
-        ud1=(unsigned char *)data->data;
-        ud2=(unsigned short *)data->data;
-        d2=(short *)data->data;
-        ud4=(unsigned int *)data->data;
-
-        type=ud1[0]&0x7F;
-        button=ud1[1];
+        type=((unsigned char *)data->data)[0]&0x7F;
+        button=((unsigned char *)data->data)[1];
 
         switch (type) {
             case ButtonPress:
                 for (unsigned int i=0; i<events.count; i++) {
                     if (button == events.ev_button[i]) {
-                        if (p->mmoved) p->mmoved=0;
-                        if (p->Status2<0) p->Status2=0;
-                        p->Status2++;
+                        if (heap->mmoved)    heap->mmoved  = 0;
+                        if (heap->Status2<0) heap->Status2 = 0;
+                        heap->Status2++;
                         events.flag[i] = true;
                     }
                 }
@@ -70,9 +63,9 @@ namespace cirno {
             case ButtonRelease:
                 for (unsigned int i=0; i<events.count; i++) {
                     if (button == events.ev_button[i]) {
-                        if (p->mmoved) p->mmoved=0;
-                        if (p->Status2<0) p->Status2=0;
-                        p->Status2++;
+                        if (heap->mmoved)    heap->mmoved  = 0;
+                        if (heap->Status2<0) heap->Status2 = 0;
+                        heap->Status2++;
                         events.flag[i] = false;
                     }
                 }

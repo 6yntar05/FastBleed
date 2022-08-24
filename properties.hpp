@@ -4,9 +4,8 @@
     const unsigned int c_entropy_variation = 5; // Entropy range (value+-delays): uint [0:+inf)
 
 /* GENERIC BUILD PROPERTIES */
-    #define DEBUG
     #define COLORS
 
 /* LINUX BUILD PROPERTIES */
-    #define USE_WAYLAND
+    //#define USE_WAYLAND
     #define USE_X11

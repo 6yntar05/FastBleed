@@ -5,7 +5,7 @@
 #include <iostream>
 #include <functional>
 #include <boost/program_options.hpp>
-#include "ui/event.hpp"                                 // cirno::error()/warn()
+#include "ui/feedback.hpp"                              // cirno::error()/warn()
 #include "properties.hpp"                               // Default values; Build properties
 #include "platform/platform_picker.hpp"                 // cirno::init() returns platform-non-specifically abstraction
 
@@ -15,6 +15,7 @@ float relation          = c_relation;                   // Hold time / Release t
 unsigned int entropy_variation = c_entropy_variation;   // Introduces randomness in the timings of pressing
 /*/*/
 
+bool be_verbose = false;
 bool override_wayland, override_xorg;
 namespace po = boost::program_options;
 int parse_args(int argc, char* argv[]);
@@ -33,11 +34,7 @@ typedef struct s_timings {
 } t_timings;
 t_timings calculate_timings(float cps, float relation, unsigned int entropy_variation);
 
-void handle_actions(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events);
-
-#ifdef DEBUG
-    void debug_bench(std::shared_ptr<cirno::control_impl> control, int button);
-#endif
+void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, struct s_event_decl actions);
 
 int main(int argc, char* argv[]) {
     parse_args(argc, argv);
@@ -59,10 +56,6 @@ int main(int argc, char* argv[]) {
             break;
     }; if (status < 0) exit(1);
 
-    #ifdef DEBUG
-        debug_bench(control, 1);
-    #endif
-
     t_timings timings = calculate_timings(cps, relation, entropy_variation);        // Calculate delays around CPS/Relation value
     
  /*************[Declare events]*************/
@@ -82,12 +75,14 @@ int main(int argc, char* argv[]) {
     events_decl.ev_button[1] = 9;
     events_decl.act_button[1] = 3;
 
+    // ...
+
     // For some reason expandable ._.
     // Why did I then cut KeyPressing from Xorg impl.??? Ok later
  /*/*/
 
     // Start actions handler thread
-    std::thread actions_thread(handle_actions, control, 3, timings, events_decl);
+    std::thread actions_thread(handle_actions, control, timings, events_decl);
     actions_thread.detach();
 
     // Call events handler
@@ -106,6 +101,7 @@ int parse_args(int argc, char* argv[]) {
     po::options_description desc("Usage: gofra [ options ... ]\n\tWhere options");
     desc.add_options()
         ("help,h", "Help page")
+        ("verbose,v", "Be verbose")
         ("cps,c", po::value<float>(&cps), "Clicks Per Second: float (0.0:500.0)")
         ("relation,r", po::value<float>(&relation), "'Hold time'/'Release time' relation: float (0.0:500/cps)")
         //("entropy,e", po::value<unsigned int>(&entropy_variation), "Entropy range (value+-delays): uint [0:?)")
@@ -127,6 +123,9 @@ int parse_args(int argc, char* argv[]) {
         }
     #endif
 
+    if (args.count("verbose")) {
+        be_verbose = true;
+    }
     if (args.count("help")) {
         std::cout << desc << std::endl;
         exit(0);
@@ -177,24 +176,25 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
         return calculate_timings(c_cps, c_relation, c_entropy_variation);    // Incorrect build-in values can lead to looping recursion
     }
 
-    #ifdef DEBUG
-        std::cerr << "[DEBUG] calculate_timings() => " << ret.hold_time << "/" << ret.release_time << std::endl;
-    #endif
+    if (be_verbose)
+        std::cerr << "[INFO ] Calculated timings => "
+            << ret.hold_time << "ms /" << ret.release_time << "ms" << std::endl;
+
     return ret;
 }
 
-void handle_actions(std::shared_ptr<cirno::control_impl> control, int keysym, t_timings timings, struct s_event_decl events) {
+void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, struct s_event_decl actions) {
     std::random_device rd; std::mt19937 gen_seed(rd());
     std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation);
     // ^ Introduces randomness in the timings of pressing. Makes clicks more natural. ^
 
     bool cooldown = false; // If nothing needs to be done
     while (true) {
-        for (unsigned int i=0; i<events.count; i++) {
-            if (events.flag[i]) {
-                control->action_button(events.act_button[i], true);
+        for (unsigned int i=0; i<actions.count; i++) {
+            if (actions.flag[i]) {
+                control->action_button(actions.act_button[i], true);
                 std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-                control->action_button(events.act_button[i], false);
+                control->action_button(actions.act_button[i], false);
                 std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
                 cooldown = true;
             }
@@ -205,14 +205,3 @@ void handle_actions(std::shared_ptr<cirno::control_impl> control, int keysym, t_
         cooldown = false;
     }
 }
-
-#ifdef DEBUG
-    void debug_bench(std::shared_ptr<cirno::control_impl> control, int button) {
-        auto start_time = std::chrono::steady_clock::now();
-        control->action_button(button, true);
-        auto stop_time = std::chrono::steady_clock::now();
-        control->action_button(button, false);
-        auto elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(stop_time - start_time);
-        std::cout << "[DEBUG] Benchmark click time: " << elapsed_ns.count() << " ns\n";
-    }
-#endif
