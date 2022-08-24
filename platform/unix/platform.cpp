@@ -29,7 +29,7 @@ std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
 
 std::shared_ptr<control_impl> get_platform() {
     user_windowing windowing;
-    if (std::getenv("WAYLAND_DISPLAY") || override_wayland) {
+    if ((std::getenv("WAYLAND_DISPLAY") || override_wayland) && (!override_xorg)) {
         #ifdef USE_WAYLAND
             return windowing.make_api(2);
         #else

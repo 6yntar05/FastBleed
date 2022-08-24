@@ -1,5 +1,9 @@
 #include <vector>
 
+#ifdef USE_WAYLAND
+    #include <wayland-client.h>
+#endif
+
 struct s_event_decl {
     unsigned int count;
     unsigned int *ev_button;
@@ -18,6 +22,10 @@ public:
 };
 
 class wayland_windowing : public control_impl {
+private:
+    #ifdef USE_WAYLAND
+        struct wl_display *display;
+    #endif
 public:
     ~wayland_windowing();
     int init();

@@ -12,7 +12,7 @@
 #include "../../ui/feedback.hpp"
 
 #ifdef USE_WAYLAND
-    #include <libinput.h>
+    #include <wayland-client.h>
 #endif
 
 namespace cirno {
@@ -24,14 +24,20 @@ namespace cirno {
     }
 
     int wayland_windowing::init() {
+        display = wl_display_connect(NULL);
+        if (display == NULL)
+            return -1;
+            
         return 0;
     }
 
     int wayland_windowing::action_button(int keysym, bool pressing) {
+        wl_display_connect(NULL);
         return 0;
     }
 
     int wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+        wl_display_connect(NULL);
         return 0;
     }
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/

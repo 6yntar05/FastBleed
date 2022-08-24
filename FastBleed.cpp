@@ -7,7 +7,7 @@
 #include <boost/program_options.hpp>
 #include "ui/feedback.hpp"                              // cirno::error()/warn()
 #include "properties.hpp"                               // Default values; Build properties
-#include "platform/platform_picker.hpp"                 // cirno::init() returns platform-non-specifically abstraction
+#include "platform/platform.hpp"                        // cirno::init() returns platform-non-specifically abstraction
 
 /*************[Default values]*************/
 float cps               = c_cps;                        // Click Per Second
@@ -54,7 +54,10 @@ int main(int argc, char* argv[]) {
         case -201:
             std::cerr << "This build completed without Wayland support.\n";
             break;
-    }; if (status < 0) exit(1);
+    }; if (status < 0) {
+        cirno::error("Failed to initialize implementation");
+        exit(1);
+    }
 
     t_timings timings = calculate_timings(cps, relation, entropy_variation);        // Calculate delays around CPS/Relation value
     
@@ -86,8 +89,9 @@ int main(int argc, char* argv[]) {
     actions_thread.detach();
 
     // Call events handler
+    cirno::general_state(true);
     if (control->handle_events(&events_decl) != 0) {
-        std::cerr << "Something goes wrong! Exiting...\n";
+        cirno::error("Unable to handling events!");
         exit(1);
     }
 

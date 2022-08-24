@@ -1,0 +1,10 @@
+=> Unix: Wayland support                5%
+=> Unix: * keyboard events handling     0%
+=> *: CMake crossplatform separation    0%
+
+=> *: GUI                               0%
+=> W*nd*ws: support                     0%
+=> *: Get rid of boost::program_options 0%
+
+=> Unix: (Linux) UInput support?        0%
+=> MacOS: support                       0%

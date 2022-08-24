@@ -1,21 +1,26 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -Wno-unused-but-set-variable")
-add_compile_options(-O3)
-
 project(            FastBleed
     DESCRIPTION     "Yet another crossplatform clicker"
     HOMEPAGE_URL    "https://github.com/6yntar05/FastBleed"
     LANGUAGES       CXX
 )
 
-find_package(Boost REQUIRED COMPONENTS program_options)
-find_package(X11 REQUIRED COMPONENTS Xtst)
-message(STATUS "X11_FOUND = ${X11_FOUND}")
-message(STATUS "X11_XTest_LIB = ${X11_XTest_LIB}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -Wno-unused-but-set-variable -lwayland-client")
+add_compile_options(-O3)
 
-include_directories     (${Boost_INCLUDE_DIRS} ${X11_INCLUDE_DIR} )
-link_directories        (${Boost_LIBRARY_DIRS} ${X11_LIBRARIES} ${X11_XTest_LIB})
+find_package(Boost REQUIRED COMPONENTS program_options)
+
+if(UNIX)
+    find_package(X11 REQUIRED COMPONENTS Xtst)
+    message(STATUS "X11_FOUND = ${X11_FOUND}")
+    message(STATUS "X11_XTest_LIB = ${X11_XTest_LIB}")
+    include_directories(${X11_INCLUDE_DIR})
+    link_directories(${X11_LIBRARIES} ${X11_XTest_LIB})
+endif()
+
+include_directories     (${Boost_INCLUDE_DIRS})
+link_directories        (${Boost_LIBRARY_DIRS})
 add_definitions         (${Boost_DEFINITIONS})
 
 file                    (GLOB_RECURSE SRCFILES "./platform/*.cpp" "./ui/*.cpp")
