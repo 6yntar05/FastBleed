@@ -6,7 +6,7 @@ project(            FastBleed
     LANGUAGES       CXX
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -Wno-unused-but-set-variable -lwayland-client")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -lwayland-client")
 add_compile_options(-O3)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
@@ -17,6 +17,12 @@ if(UNIX)
     message(STATUS "X11_XTest_LIB = ${X11_XTest_LIB}")
     include_directories(${X11_INCLUDE_DIR})
     link_directories(${X11_LIBRARIES} ${X11_XTest_LIB})
+elseif(WIN32)
+    message("Windows is not supported for now.")
+elseif(APPLE)
+    message("Apple is not supported.")
+else()
+    message("WTF")
 endif()
 
 include_directories     (${Boost_INCLUDE_DIRS})

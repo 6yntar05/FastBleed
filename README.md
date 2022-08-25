@@ -4,10 +4,9 @@ Only for unix systems for now
 
 ## Building
 ### Dependencies
-###### Necessary:
 - boost::program_options
 - hands (not necessarily straight)
-###### Not necessary:
+###### Optional:
 - X11
 - wayland-client
 

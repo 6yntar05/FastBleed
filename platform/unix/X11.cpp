@@ -1,13 +1,8 @@
 #include "../../properties.hpp"
 #include <vector>
-#include <cstdint>
-#include <cmath>
-#include <csignal>
 #include <chrono>
-#include <random>
 #include <thread>
 #include <iostream>
-#include <functional>
 #include "X11.hpp"
 #include "../../ui/feedback.hpp"
 
@@ -26,21 +21,20 @@ namespace cirno {
 #ifdef USE_X11
 
     typedef struct{
-        int Status1, Status2, x, y, mmoved, doit;
+        int work_flag;
         Display *lclDisplay, *recDisplay;
-        XRecordContext rc;
+        XRecordContext context;
         struct s_event_decl events_decl;
-    } Priv;
+    } s_XHeap;
 
-    void eventCallback(XPointer priv, XRecordInterceptData *data) {
-        // Partly taken from alvatar/xmacro
-        Priv *heap=(Priv *) priv;
+    void eventCallback(XPointer xheap, XRecordInterceptData *data) {
+        s_XHeap *heap=(s_XHeap *) xheap;
         unsigned int type, button;
         unsigned char *char_data;
 
         struct s_event_decl events = heap->events_decl;
 
-        if (data->category != XRecordFromServer || heap->doit == 0) {
+        if (data->category != XRecordFromServer || heap->work_flag == 0) {
             XRecordFreeData(data);
             return;
         }
@@ -52,9 +46,6 @@ namespace cirno {
             case ButtonPress:
                 for (unsigned int i=0; i<events.count; i++) {
                     if (button == events.ev_button[i]) {
-                        if (heap->mmoved)    heap->mmoved  = 0;
-                        if (heap->Status2<0) heap->Status2 = 0;
-                        heap->Status2++;
                         events.flag[i] = true;
                     }
                 }
@@ -63,9 +54,6 @@ namespace cirno {
             case ButtonRelease:
                 for (unsigned int i=0; i<events.count; i++) {
                     if (button == events.ev_button[i]) {
-                        if (heap->mmoved)    heap->mmoved  = 0;
-                        if (heap->Status2<0) heap->Status2 = 0;
-                        heap->Status2++;
                         events.flag[i] = false;
                     }
                 }
@@ -106,48 +94,45 @@ namespace cirno {
     }
 
     int x11_windowing::handle_events(struct s_event_decl *events_decl) {
-        // Partly taken from alvatar/xmacro
-        Window Root, rRoot, rChild;
-        XRecordContext rc;
-        XRecordRange *rr;
-        XRecordClientSpec rcs;
-        Priv priv;
+        XRecordContext context;
+        XRecordRange *allocRange;
+        XRecordClientSpec clientSpec;
+        s_XHeap xheap;
 
-        rr = XRecordAllocRange();
-        if (!rr) {
+        allocRange = XRecordAllocRange();
+        if (!allocRange) {
             error("Failed to call XRecordAllocRange()");
             return -1;
         }
 
-        rr->device_events.first=KeyPress;
-        rr->device_events.last=MotionNotify;
-        rcs=XRecordAllClients;
-        rc=XRecordCreateContext(x11_windowing::recDisplay, 0, &rcs, 1, &rr, 1);
-        if (!rc) {return -2;}
+        allocRange->device_events.first=KeyPress;
+        allocRange->device_events.last=MotionNotify;
+        clientSpec=XRecordAllClients;
+        context=XRecordCreateContext(x11_windowing::recDisplay, 0, &clientSpec, 1, &allocRange, 1);
+        if (!context) {
+            error("Failed to get XRecord context");
+            return -2;
+        }
 
-        priv.x              = 0;
-        priv.y              = 0;
-        priv.mmoved         = 1;
-        priv.Status2        = 0;
-        priv.Status1        = 2;
-        priv.doit           = 1;
-        priv.lclDisplay     = x11_windowing::lclDisplay;
-        priv.recDisplay     = x11_windowing::recDisplay;
-        priv.rc             = rc;
-        priv.events_decl    = *events_decl;
+        xheap.work_flag      = true;
+        xheap.lclDisplay     = x11_windowing::lclDisplay;
+        xheap.recDisplay     = x11_windowing::recDisplay;
+        xheap.context        = context;
+        xheap.events_decl    = *events_decl;
         
-        if (!XRecordEnableContextAsync(recDisplay, rc, eventCallback, (XPointer)&priv)) {
+        if (!XRecordEnableContextAsync(recDisplay, context, eventCallback, (XPointer)&xheap)) {
+            error("Failed to start async eventCallback()");
             return -3;
         }
 
-        while (priv.doit) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        while (xheap.work_flag) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(c_actions_cooldown));
             XRecordProcessReplies(recDisplay);
         }
 
-        XRecordDisableContext(lclDisplay, rc);
-        XRecordFreeContext(lclDisplay, rc);
-        XFree(rr);
+        XRecordDisableContext(lclDisplay, context);
+        XRecordFreeContext(lclDisplay, context);
+        XFree(allocRange);
 
         return 0;
     }
