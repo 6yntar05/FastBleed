@@ -30,17 +30,14 @@ namespace cirno {
     void eventCallback(XPointer xheap, XRecordInterceptData *data) {
         s_XHeap *heap=(s_XHeap *) xheap;
         unsigned int type, button;
-        unsigned char *char_data;
-
         struct s_event_decl events = heap->events_decl;
 
         if (data->category != XRecordFromServer || heap->work_flag == 0) {
             XRecordFreeData(data);
             return;
         }
-
-        type=((unsigned char *)data->data)[0]&0x7F;
-        button=((unsigned char *)data->data)[1];
+        type=(static_cast<unsigned char *>(data->data))[0];
+        button=(static_cast<unsigned char *>(data->data))[1];
 
         switch (type) {
             case ButtonPress:

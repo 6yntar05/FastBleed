@@ -19,13 +19,6 @@ public:
 };
 
 class x11_windowing : public control_impl {
-private:
-    #ifdef USE_X11
-        Display *lclDisplay;
-        Display *recDisplay;
-        int lclScreen;
-        Window rootWindow;
-    #endif
 public:
     ~x11_windowing();
     int init();

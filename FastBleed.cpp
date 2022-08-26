@@ -5,18 +5,20 @@
 #include <iostream>
 #include <functional>
 #include <boost/program_options.hpp>
-#include "ui/feedback.hpp"                              // cirno::error()/warn()
-#include "properties.hpp"                               // Default values; Build properties
-#include "platform/platform.hpp"                        // cirno::init() returns platform-non-specifically abstraction
+#include "ui/feedback.hpp"                                      // cirno::error()/warn()
+#include "properties.hpp"                                       // Default values; Build properties
+#include "platform/platform.hpp"                                // cirno::init() returns platform-non-specifically abstraction
+#include "config/config.hpp"                                    // Config <-> FastBleed layer
 
 /*************[Default values]*************/
-float cps                       = c_cps;                 // Click Per Second
-float relation                  = c_relation;            // Hold time / Release time
-unsigned int entropy_variation  = c_entropy_variation;   // Introduces randomness in the timings of pressing
-unsigned int actions_cooldown   = c_actions_cooldown;
+static float cps                        = c_cps;                // Click Per Second
+static float relation                   = c_relation;           // Hold time / Release time
+static unsigned int entropy_variation   = c_entropy_variation;  // Introduces randomness in the timings of pressing
+static unsigned int actions_cooldown    = c_actions_cooldown;
+
+static bool be_verbose                  = false;
 /*/*/
 
-bool be_verbose = false;
 bool override_wayland, override_xorg;
 namespace po = boost::program_options;
 int parse_args(int argc, char* argv[]);
@@ -30,13 +32,12 @@ enum e_actions {
     ACT_TEXT_TYPE,
     ACT_SYS_EXEC
 };
-std::vector<e_actions> vec_action_script;
 
 struct s_event_decl {
     unsigned int count;
     unsigned int *ev_button;
     bool *flag;
-    e_actions *action;
+    std::vector<e_actions> *action;
     unsigned int *action_param;
 }; // Structure of information about single macro
 
@@ -76,24 +77,30 @@ int main(int argc, char* argv[]) {
     
  /*************[Declare events]*************/
     s_event_decl events_decl;
+    std::vector<e_actions> vec_action_script;
 
-    events_decl.count = 2;
+    // Parse config
+    // config->...
+
+    events_decl.count = 2;      // Count of macros
+
     events_decl.ev_button = new unsigned int[events_decl.count];
     events_decl.flag = new bool[events_decl.count];
     std::fill(events_decl.flag, events_decl.flag+events_decl.count, false);
-    events_decl.action = new e_actions[events_decl.count];
+    events_decl.action = new std::vector<e_actions>[events_decl.count];
     events_decl.action_param = new unsigned int[events_decl.count];
 
     // Macro 1
     events_decl.ev_button[0] = 9;
-    events_decl.action[0] = ACT_CLICKER;
-    events_decl.action_param[0] = 3;
-    
+    vec_action_script.push_back(ACT_CLICKER);
+    events_decl.action[0] = vec_action_script;
+    events_decl.action_param[0] = 1;
 
     // Macro 2
     events_decl.ev_button[1] = 8;
-    events_decl.action[1] = ACT_CLICKER;
-    events_decl.action_param[1] = 1;
+    vec_action_script.push_back(ACT_CLICKER);
+    events_decl.action[1] = vec_action_script;
+    events_decl.action_param[1] = 3;
 
     // ...
 
@@ -206,45 +213,50 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
 }
 
 void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, struct s_event_decl actions) {
+    bool cooldown = false; // If nothing needs to be done
+
     std::random_device rd; std::mt19937 gen_seed(rd());
     std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation);
     // ^ Introduces randomness in the timings of pressing. Makes clicks more natural. ^
 
-    bool cooldown = false; // If nothing needs to be done
     while (true) {
         for (unsigned int i=0; i<actions.count; i++) {
+
             if (actions.flag[i]) {
                 cooldown = true;
-                switch (actions.action[i]) {
-                    case ACT_CLICK:
-                        control->action_button(actions.action_param[i], true);
-                        break;
-                    
-                    case ACT_RELEASE:
-                        control->action_button(actions.action_param[i], false);
-                        break;
+                for (int a = 0; a < static_cast<int>(actions.action->size()); a++) {
 
-                    case ACT_CLICKER:
-                        control->action_button(actions.action_param[i], true);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-                        control->action_button(actions.action_param[i], false);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
-                        break;
-                    
-                    case ACT_DELAY:
-                        std::this_thread::sleep_for(std::chrono::milliseconds(actions.action_param[i]));
-                        cooldown = false;
-                        break;
-                    
-                    case ACT_MOVE:
-                        break;
-                    
-                    case ACT_SYS_EXEC:
-                        break;
-                    
-                    case ACT_TEXT_TYPE:
-                        break;
-                };
+                    switch (actions.action->at(a)) {
+                        case ACT_CLICK:
+                            control->action_button(actions.action_param[i], true);
+                            break;
+                        
+                        case ACT_RELEASE:
+                            control->action_button(actions.action_param[i], false);
+                            break;
+
+                        case ACT_CLICKER:
+                            control->action_button(actions.action_param[i], true);
+                            std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
+                            control->action_button(actions.action_param[i], false);
+                            std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
+                            break;
+                        
+                        case ACT_DELAY:
+                            std::this_thread::sleep_for(std::chrono::milliseconds(actions.action_param[i]));
+                            cooldown = false;
+                            break;
+                        
+                        case ACT_MOVE:
+                            break;
+                        
+                        case ACT_SYS_EXEC:
+                            break;
+                        
+                        case ACT_TEXT_TYPE:
+                            break;
+                    };
+                }
             }
 
         }

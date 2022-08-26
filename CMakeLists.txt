@@ -6,7 +6,7 @@ project(            FastBleed
     LANGUAGES       CXX
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -lwayland-client")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-unused-parameter -lwayland-client")
 add_compile_options(-O3)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
@@ -29,6 +29,6 @@ include_directories     (${Boost_INCLUDE_DIRS})
 link_directories        (${Boost_LIBRARY_DIRS})
 add_definitions         (${Boost_DEFINITIONS})
 
-file                    (GLOB_RECURSE SRCFILES "./platform/*.cpp" "./ui/*.cpp")
+file                    (GLOB_RECURSE SRCFILES "./platform/*.cpp" "./ui/*.cpp" "./config/*.cpp")
 add_executable          (${PROJECT_NAME} ./FastBleed.cpp ${SRCFILES})
 target_link_libraries   (${PROJECT_NAME} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${X11_LIBRARIES} ${X11_XTest_LIB})

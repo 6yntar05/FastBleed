@@ -24,7 +24,17 @@ public:
 class wayland_windowing : public control_impl {
 private:
     #ifdef USE_WAYLAND
-        struct wl_display *display;
+        wl_display *display = NULL;
+        wl_registry *registry = NULL;
+        wl_seat *seat = NULL;
+        /*
+        size_t keymap_len;
+        struct keymap_entry *keymap;
+
+        uint32_t mod_status;
+        size_t command_count;
+        struct wtype_command *commands;
+        */
     #endif
 public:
     ~wayland_windowing();
