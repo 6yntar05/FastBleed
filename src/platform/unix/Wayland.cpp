@@ -31,7 +31,7 @@ namespace cirno {
     }
 
     struct wl_registry_listener registry_listener = {
-        pointer_register_handler
+        pointer_register_handler,
     };
 
 /*********************[  class wayland_windowing : control_impl {  ]**********************/
