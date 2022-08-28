@@ -6,8 +6,8 @@ project(            FastBleed
     LANGUAGES       CXX
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-but-set-variable -lwayland-client")
-add_compile_options(-O3)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lwayland-client -Wno-unused-parameter \
+    -Wall -Wextra -Wpedantic")
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 

@@ -38,7 +38,7 @@ struct s_event_decl {
     unsigned int *ev_button;
     bool *flag;
     std::vector<e_actions> *action;
-    unsigned int *action_param;
+    std::vector<unsigned int> *action_param;
 }; // Structure of information about single macro
 
 typedef struct s_timings {
@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
  /*************[Declare events]*************/
     s_event_decl events_decl;
     std::vector<e_actions> vec_action_script;
+    std::vector<unsigned int> vec_action_params;
 
     // Parse config
     // config->...
@@ -88,19 +89,31 @@ int main(int argc, char* argv[]) {
     events_decl.flag = new bool[events_decl.count];
     std::fill(events_decl.flag, events_decl.flag+events_decl.count, false);
     events_decl.action = new std::vector<e_actions>[events_decl.count];
-    events_decl.action_param = new unsigned int[events_decl.count];
+    events_decl.action_param = new std::vector<unsigned int>[events_decl.count];
 
     // Macro 1
     events_decl.ev_button[0] = 9;
-    vec_action_script.push_back(ACT_CLICKER);
-    events_decl.action[0] = vec_action_script;
-    events_decl.action_param[0] = 1;
 
+    vec_action_script.push_back(ACT_CLICKER);
+    vec_action_params.push_back(1);
+
+    events_decl.action[0] = vec_action_script;
+    events_decl.action_param[0] = vec_action_params;
+
+    vec_action_script.clear();
+    vec_action_params.clear();
+    
     // Macro 2
     events_decl.ev_button[1] = 8;
+
     vec_action_script.push_back(ACT_CLICKER);
+    vec_action_params.push_back(3);
+
     events_decl.action[1] = vec_action_script;
-    events_decl.action_param[1] = 3;
+    events_decl.action_param[1] = vec_action_params;
+
+    vec_action_script.clear();
+    vec_action_params.clear();
 
     // ...
 
@@ -119,10 +132,10 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    delete[] events_decl.ev_button;
-    delete[] events_decl.flag;
-    delete[] events_decl.action;
-    delete[] events_decl.action_param;
+    //delete[] events_decl.ev_button;
+    //delete[] events_decl.flag;
+    //delete[] events_decl.action;
+    //delete[] events_decl.action_param;
     return 0;
 }
 
@@ -179,8 +192,8 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
     float total_click_time = 1000.0f / cps;
 
     // Fallback values:
-    ret.hold_time    = total_click_time / 2;    
-    ret.release_time = total_click_time / 2;
+    ret.hold_time    = static_cast<unsigned int>(total_click_time) / 2;    
+    ret.release_time = static_cast<unsigned int>(total_click_time) / 2;
 
     // An auxiliary number that helps determine the most approximate value; = biggest possible value :
     float best       = total_click_time;
@@ -228,22 +241,22 @@ void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timi
 
                     switch (actions.action->at(a)) {
                         case ACT_CLICK:
-                            control->action_button(actions.action_param[i], true);
+                            control->action_button( actions.action_param[i].at(a) , true);
                             break;
                         
                         case ACT_RELEASE:
-                            control->action_button(actions.action_param[i], false);
+                            control->action_button(actions.action_param[i].at(a) , false);
                             break;
 
                         case ACT_CLICKER:
-                            control->action_button(actions.action_param[i], true);
+                            control->action_button(actions.action_param[i].at(a) , true);
                             std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-                            control->action_button(actions.action_param[i], false);
+                            control->action_button(actions.action_param[i].at(a) , false);
                             std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
                             break;
                         
                         case ACT_DELAY:
-                            std::this_thread::sleep_for(std::chrono::milliseconds(actions.action_param[i]));
+                            std::this_thread::sleep_for(std::chrono::milliseconds(actions.action_param[i].at(a)));
                             cooldown = false;
                             break;
                         
@@ -254,6 +267,9 @@ void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timi
                             break;
                         
                         case ACT_TEXT_TYPE:
+                            break;
+                        
+                        default:
                             break;
                     };
                 }

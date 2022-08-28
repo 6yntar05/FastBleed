@@ -8,12 +8,13 @@
 namespace cirno {
 // Pattern "FACTORY" ^.^
 std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
+    std::shared_ptr<control_impl> debug;
     switch (picked_api){
         case 1:
-            return std::make_shared<x11_windowing>();
+            debug = std::make_shared<x11_windowing>();
             break;
         case 2:
-            return std::make_shared<wayland_windowing>();
+            debug = std::make_shared<wayland_windowing>();
             break;
         default:
             class plug_windowing : public control_impl{
@@ -23,8 +24,10 @@ std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
                 int action_button(int keysym, bool pressing)        override {return -1;}
                 int handle_events(struct s_event_decl *events_decl) override {return -1;}
             };
-            return std::make_shared<plug_windowing>();
+            debug = std::make_shared<plug_windowing>();
     };
+
+    return debug;
 };
 
 std::shared_ptr<control_impl> get_platform() {

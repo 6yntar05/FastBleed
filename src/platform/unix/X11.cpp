@@ -55,6 +55,9 @@ namespace cirno {
                     }
                 }
                 break;
+            
+            default:
+                break;
         }
         XRecordFreeData(data);
     }

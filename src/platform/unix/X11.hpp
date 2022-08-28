@@ -1,5 +1,6 @@
 // Imported in X11.cpp. USE_X11 taken from there
 #include <vector>
+#define USE_X11
 
 #ifdef USE_X11
     #include <X11/Xlib.h>
@@ -32,8 +33,8 @@ private:
     #endif
 public:
     ~x11_windowing();
-    int init();
-    int action_button(int keysym, bool pressing);
-    int handle_events(struct s_event_decl *events_decl);
+    int init() override;
+    int action_button(int keysym, bool pressing) override;
+    int handle_events(struct s_event_decl *events_decl) override;
 };
 }

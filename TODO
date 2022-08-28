@@ -1,8 +1,8 @@
 => Unix: Wayland support                9%
-=> *: Macro-script definitions          35% +
+=> *: Macro-script definitions          35%
 => *: * keyboard events handling        0%
 => *: CMake crossplatform separation    10%
-=> *: Config support                    10% +
+=> *: Config support                    10% 
 
 => *: GUI                               0%
 => W*nd*ws: support                     0%

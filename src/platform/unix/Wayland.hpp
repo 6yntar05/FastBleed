@@ -17,7 +17,7 @@ class control_impl {
 public:
     virtual ~control_impl()                                     = default;
     virtual int init()                                          = 0;
-    virtual int button(int keysym, int pressing)                = 0;
+    virtual int action_button(int keysym, bool pressing)        = 0;
     virtual int handle_events(struct s_event_decl *events_decl) = 0;
 };
 
@@ -38,9 +38,9 @@ private:
     #endif
 public:
     ~wayland_windowing();
-    int init();
-    int action_button(int keysym, bool pressing);
-    int handle_events(struct s_event_decl *events_decl);
+    int init() override;
+    int action_button(int keysym, bool pressing) override;
+    int handle_events(struct s_event_decl *events_decl) override;
 };
 
 }

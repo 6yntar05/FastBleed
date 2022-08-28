@@ -22,11 +22,11 @@ namespace cirno {
             void *data, struct wl_registry *registry, uint32_t id,
             const char *interface, uint32_t version) {
 
-        uint32_t registry_pointer_id;
+        //uint32_t registry_pointer_id;
 
         if (static_cast<std::string>(interface) == "zwlr_virtual_pointer_manager_v1") {
             std::cerr << "Found interface: " << interface << "; ID: " << id << std::endl;
-            registry_pointer_id = id;
+            //registry_pointer_id = id;
         }
     }
 
@@ -40,35 +40,36 @@ namespace cirno {
     }
 
     int wayland_windowing::init() {
-        display = wl_display_connect(NULL);
-        if (display == NULL) {
+        this->display = wl_display_connect(NULL);
+        /*
+        if (wayland_windowing::display == NULL) {
             return -1;
         }
-
-        registry = wl_display_get_registry(display);
-        if (registry == NULL) {
+        wayland_windowing::registry = wl_display_get_registry(wayland_windowing::display);
+        if (wayland_windowing::registry == NULL) {
             return -2;
         }
 
-        wl_registry_add_listener(registry, &registry_listener, NULL);
+        wl_registry_add_listener(wayland_windowing::registry, &registry_listener, NULL);
         
-        wl_display_dispatch(display);
-        wl_display_roundtrip(display);
+        wl_display_dispatch(wayland_windowing::display);
+        wl_display_roundtrip(wayland_windowing::display);
 
-        wl_registry_destroy(registry);
-
+        wl_registry_destroy(wayland_windowing::registry);*/
         return 0;
     }
 
     int wayland_windowing::action_button(int keysym, bool pressing) {
-        display = wl_display_connect(NULL);
+        //display = wl_display_connect(NULL);
         std::cerr << "Not implemented for now!\n";
         return -1;
     }
 
     int wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+        /*
         display = wl_display_connect(NULL);
         std::cerr << "Not implemented for now!\n";
+        */
         return -1;
     }
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/
