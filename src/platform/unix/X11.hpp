@@ -1,6 +1,5 @@
 // Imported in X11.cpp. USE_X11 taken from there
 #include <vector>
-#define USE_X11
 
 #ifdef USE_X11
     #include <X11/Xlib.h>

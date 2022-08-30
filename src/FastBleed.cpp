@@ -51,7 +51,9 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
 void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, struct s_event_decl actions);
 
 int main(int argc, char* argv[]) {
+    std::string config_path = "./config.json";
     parse_args(argc, argv);
+    cirno::c_config config {config_path};
 
     std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
     int status = control->init();                                                   // Initialize implementation
@@ -80,8 +82,7 @@ int main(int argc, char* argv[]) {
     std::vector<e_actions> vec_action_script;
     std::vector<unsigned int> vec_action_params;
 
-    // Parse config
-    // config->...
+    config.parse();
 
     events_decl.count = 2;      // Count of macros
 
