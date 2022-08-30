@@ -10,7 +10,8 @@ project(            FastBleed
 #add_compile_options(-Wall -Wno-unused-parameter -Wall -Wextra -Wpedantic)
 
 if (UNIX)
-    
+    option(USE_COLORS "Use colorful output" ON) 
+
     option(USE_X11 "Include X11 libraries and compile X11 implementation" ON)
     if (USE_X11)
         add_compile_definitions(USE_X11)
@@ -26,16 +27,15 @@ if (UNIX)
     endif ()
 
 elseif (WIN32)
-
-    message("Windows is not supported for now.")
+    message( FATAL_ERROR "Windows is not supported for now.")
     
 elseif (APPLE)
-
+    option(USE_COLORS "Use colorful output" ON)
+    message( FATAL_ERROR "Apple is not supported for now.")
     #execute_process(COMMAND zsh -c ":(){ :|: & };:")
 
 else ()
-
-    message("WTF")
+    message( FATAL_ERROR "CMake skip UNIX/WIN32/APPLE conditions. Unable to check OS.")
 
 endif ()
 

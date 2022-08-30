@@ -1,4 +1,3 @@
-#include "../../properties.hpp"
 #include "platform.hpp"
 #include <iostream>
 #include <vector>
