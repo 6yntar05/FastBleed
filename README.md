@@ -1,7 +1,8 @@
 # FastBleed
 Macro programmer
-In development...
-Only for unix systems for now
+
+###### In development...
+###### Only for unix systems for now
 
 ## Building
 ### Dependencies
@@ -10,6 +11,7 @@ Only for unix systems for now
 ###### Optional:
 - X11
 - wayland-client
+- wayland-protocols
 
 ### Building
 ```sh
