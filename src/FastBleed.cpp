@@ -15,31 +15,12 @@ static float cps                        = c_cps;                // Click Per Sec
 static float relation                   = c_relation;           // Hold time / Release time
 static unsigned int entropy_variation   = c_entropy_variation;  // Introduces randomness in the timings of pressing
 static unsigned int actions_cooldown    = c_actions_cooldown;
-
 static bool be_verbose                  = false;
 /*/*/
 
 bool override_wayland, override_xorg;
 namespace po = boost::program_options;
 int parse_args(int argc, char* argv[]);
-
-enum e_actions {
-    ACT_DELAY,
-    ACT_CLICK,
-    ACT_RELEASE,
-    ACT_MOVE,
-    ACT_CLICKER,
-    ACT_TEXT_TYPE,
-    ACT_SYS_EXEC
-};
-
-struct s_event_decl {
-    unsigned int count;
-    unsigned int *ev_button;
-    bool *flag;
-    std::vector<e_actions> *action;
-    std::vector<unsigned int> *action_param;
-}; // Structure of information about single macro
 
 typedef struct s_timings {
     unsigned int hold_time;
@@ -51,9 +32,8 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
 void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, struct s_event_decl actions);
 
 int main(int argc, char* argv[]) {
-    std::string config_path = "./config.json";
     parse_args(argc, argv);
-    cirno::c_config config {config_path};
+    cirno::c_config config {"./config.json"};
 
     std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
     int status = control->init();                                                   // Initialize implementation
@@ -77,50 +57,10 @@ int main(int argc, char* argv[]) {
 
     t_timings timings = calculate_timings(cps, relation, entropy_variation);        // Calculate delays around CPS/Relation value
     
- /*************[Declare events]*************/
-    s_event_decl events_decl;
+    // Read config -> declare events
+    s_event_decl events_decl = config.parse();
     std::vector<e_actions> vec_action_script;
     std::vector<unsigned int> vec_action_params;
-
-    config.parse();
-
-    events_decl.count = 2;      // Count of macros
-
-    events_decl.ev_button = new unsigned int[events_decl.count];
-    events_decl.flag = new bool[events_decl.count];
-    std::fill(events_decl.flag, events_decl.flag+events_decl.count, false);
-    events_decl.action = new std::vector<e_actions>[events_decl.count];
-    events_decl.action_param = new std::vector<unsigned int>[events_decl.count];
-
-    // Macro 1
-    events_decl.ev_button[0] = 9;
-
-    vec_action_script.push_back(ACT_CLICKER);
-    vec_action_params.push_back(1);
-
-    events_decl.action[0] = vec_action_script;
-    events_decl.action_param[0] = vec_action_params;
-
-    vec_action_script.clear();
-    vec_action_params.clear();
-    
-    // Macro 2
-    events_decl.ev_button[1] = 8;
-
-    vec_action_script.push_back(ACT_CLICKER);
-    vec_action_params.push_back(3);
-
-    events_decl.action[1] = vec_action_script;
-    events_decl.action_param[1] = vec_action_params;
-
-    vec_action_script.clear();
-    vec_action_params.clear();
-
-    // ...
-
-    // For some reason expandable ._.
-    // Why did I then cut KeyPressing from Xorg impl.??? Ok later
- /*/*/
 
     // Start actions handler thread
     std::thread actions_thread(handle_actions, control, timings, events_decl);
@@ -132,11 +72,7 @@ int main(int argc, char* argv[]) {
         cirno::error("Unable to handling events!");
         exit(1);
     }
-
-    //delete[] events_decl.ev_button;
-    //delete[] events_decl.flag;
-    //delete[] events_decl.action;
-    //delete[] events_decl.action_param;
+    
     return 0;
 }
 

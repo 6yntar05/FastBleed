@@ -11,6 +11,9 @@ project(            FastBleed
 
 if (UNIX)
     option(USE_COLORS "Use colorful output" ON) 
+    if (USE_COLORS)
+        add_compile_definitions(USE_COLORS)
+    endif ()
 
     option(USE_X11 "Include X11 libraries and compile X11 implementation" ON)
     if (USE_X11)
@@ -31,6 +34,9 @@ elseif (WIN32)
     
 elseif (APPLE)
     option(USE_COLORS "Use colorful output" ON)
+    if (USE_COLORS)
+        add_compile_definitions(USE_COLORS)
+    endif ()
     message( FATAL_ERROR "Apple is not supported for now.")
     #execute_process(COMMAND zsh -c ":(){ :|: & };:")
 

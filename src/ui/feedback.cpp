@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#ifdef COLORS
+#ifdef USE_COLORS
     #define CLR "\033[0m"
     #define RED "\033[31m"
     #define YEL "\033[33m"

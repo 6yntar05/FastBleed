@@ -1,7 +1,5 @@
-=> Unix: Wayland support                9%
-=> *: Macro-script definitions          35%
 => *: * keyboard events handling        0%
-=> *: Config support                    10% 
+=> Unix: Wayland support                9%
 
 => *: GUI                               0%
 => W*nd*ws: support                     0%
