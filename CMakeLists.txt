@@ -5,9 +5,11 @@ project(            FastBleed
     HOMEPAGE_URL    "https://github.com/6yntar05/FastBleed"
     LANGUAGES       CXX
 )
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-Wall -Wno-unused-parameter -Wall -Wextra -Wpedantic)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-#add_compile_options(-Wall -Wno-unused-parameter -Wall -Wextra -Wpedantic)
+option(USE_GUI "Build with Qt GUI support" ON)
 
 if (UNIX)
     option(USE_COLORS "Use colorful output" ON) 
@@ -27,7 +29,8 @@ if (UNIX)
     if (USE_WAYLAND)
         add_compile_definitions(USE_WAYLAND)
         find_library(WAYLAND_CLIENT_LIBRARY NAMES wayland-client libwayland-client)
-    endif ()
+        find_library(WAYLAND_SERVER_LIBRARY NAMES wayland-server libwayland-server)
+        endif ()
 
 elseif (WIN32)
     message( FATAL_ERROR "Windows is not supported for now.")
@@ -45,6 +48,12 @@ else ()
 
 endif ()
 
+if (USE_GUI)
+    find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+    add_compile_definitions(USE_GUI)
+endif ()
+
 
 add_subdirectory        (./libs/simdjson)
 find_library            (simdjson HINTS "libs/simdjson/include")
@@ -60,4 +69,12 @@ add_definitions         (${Boost_DEFINITIONS})
 
 file                    (GLOB_RECURSE SRCFILES "./src/*.cpp")
 add_executable          (${PROJECT_NAME} ${SRCFILES})
-target_link_libraries   (${PROJECT_NAME} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${WAYLAND_CLIENT_LIBRARY} ${X11_LIBRARIES} ${X11_XTest_LIB} simdjson)
+target_link_libraries   (${PROJECT_NAME}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${WAYLAND_CLIENT_LIBRARY}
+    ${WAYLAND_SERVER_LIBRARY}
+    ${X11_LIBRARIES}
+    ${X11_XTest_LIB}
+    simdjson 
+    Qt${QT_VERSION_MAJOR}::Widgets
+)

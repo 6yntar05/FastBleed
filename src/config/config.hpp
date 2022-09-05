@@ -35,7 +35,6 @@ public:
     c_config(std::string PATH);
     ~c_config();
 
-    //friend void allocate(unsigned int count);
     void allocate(unsigned int count);
     void deallocate();
 

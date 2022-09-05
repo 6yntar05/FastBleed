@@ -1,7 +1,7 @@
 => *: * keyboard events handling        0%
+=> *: GUI                               5%+
 => Unix: Wayland support                9%
 
-=> *: GUI                               0%
 => W*nd*ws: support                     0%
 => *: Get rid of boost::program_options 0%
 => *: Background service                0%

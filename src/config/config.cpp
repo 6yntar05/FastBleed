@@ -1,6 +1,8 @@
 #include "./config.hpp"
+#include "../ui/feedback.hpp"
 
 #include "simdjson.h"
+#include <unordered_map>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -12,16 +14,19 @@ namespace cirno {
 using namespace simdjson;
 
 e_actions to_action(std::string str) {
-    if (str == "DELAY") return ACT_DELAY;
-    else if (str == "CLICK") return ACT_CLICK;
-    else if (str == "RELEASE") return ACT_RELEASE;
-    else if (str == "MOVE") return ACT_MOVE;
-    else if (str == "CLICKER") return ACT_CLICKER;
-    else if (str == "TEXT_TYPE") return ACT_TEXT_TYPE;
-    else if (str == "SYS_EXEC") return ACT_SYS_EXEC;
+    std::unordered_map<std::string, e_actions> umap;
+    umap["DELAY"] = ACT_DELAY;
+    umap["CLICK"] = ACT_CLICK;
+    umap["RELEASE"] = ACT_RELEASE;
+    umap["MOVE"] = ACT_MOVE;
+    umap["CLICKER"] = ACT_CLICKER;
+    umap["TEXT_TYPE"] = ACT_TEXT_TYPE;
+    umap["SYS_EXEC"] = ACT_SYS_EXEC;
 
-    std::cerr << "Failed to recognize action type\n";
-    return ACT_NULL;
+    if (umap.find(str) == umap.end())
+        cirno::error("Config syntax error : Invalid action \"" + str + "\"");
+
+    return umap.at(str);
 }
 
 void c_config::allocate(unsigned int count) {
@@ -66,7 +71,7 @@ s_event_decl c_config::parse() {
         // actions
         auto _actions = array.at(i).at_key("actions").get_array();
         macro_len = _actions.size();
-        for (int i = 0; i < macro_len; i++) {
+        for (unsigned int i = 0; i < macro_len; i++) {
             vec_action_script.push_back(
                 to_action(
                     std::string(_actions.at(i).get_c_str())
@@ -77,7 +82,7 @@ s_event_decl c_config::parse() {
         // act_params
         auto _act_params = array.at(i).at_key("act_params").get_array();
         macro_len = _act_params.size();
-        for (int i = 0; i < macro_len; i++) {
+        for (unsigned int i = 0; i < macro_len; i++) {
             vec_action_params.push_back(static_cast<unsigned int>(_act_params.at(i).get_uint64()));
         }
 

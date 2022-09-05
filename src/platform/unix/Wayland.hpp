@@ -1,7 +1,11 @@
 #include <vector>
 
+#define USE_WAYLAND
+
 #ifdef USE_WAYLAND
     #include <wayland-client.h>
+    #include <wayland-server.h>
+    #include <wayland-client-protocol.h>
 #endif
 
 struct s_event_decl {
@@ -27,6 +31,8 @@ private:
         wl_display *display = NULL;
         wl_registry *registry = NULL;
         wl_seat *seat = NULL;
+        wl_resource *resource = NULL;
+
         /*
         size_t keymap_len;
         struct keymap_entry *keymap;

@@ -1,4 +1,5 @@
-#include "../properties.hpp"
+//#include "gui.hpp"
+
 #include <iostream>
 #include <string>
 
@@ -15,6 +16,7 @@
 #endif
 
 namespace cirno {
+
     void error(std::string msg) {
         std::cerr << "["<<RED<<BOLD<<"ERROR"<<CLR<<"] "
             << BOLD<<msg<<CLR 
@@ -26,6 +28,8 @@ namespace cirno {
             << std::endl;
     }
     void general_state(bool state) {
-        std::cout << "[INFO_] Starting action handler.\n";
+        if (state)
+            std::cout << "[INFO_] Starting action handler.\n";
     }
+
 }

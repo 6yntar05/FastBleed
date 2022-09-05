@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-server-protocol.h>
 #include "Wayland.hpp"
 #include "../../ui/feedback.hpp"
 
@@ -41,7 +42,7 @@ namespace cirno {
 
     int wayland_windowing::init() {
         this->display = wl_display_connect(NULL);
-        /*
+        
         if (wayland_windowing::display == NULL) {
             return -1;
         }
@@ -55,7 +56,12 @@ namespace cirno {
         wl_display_dispatch(wayland_windowing::display);
         wl_display_roundtrip(wayland_windowing::display);
 
-        wl_registry_destroy(wayland_windowing::registry);*/
+        //wl_keyboard *keyboard = wl_seat_get_keyboard(this->seat);
+        //wl_pointer *pointer = wl_seat_get_pointer(this->seat);
+        //wl_pointer_send_button(this->resource, 0, 0, 1, 1);
+
+        wl_registry_destroy(wayland_windowing::registry);
+
         return 0;
     }
 

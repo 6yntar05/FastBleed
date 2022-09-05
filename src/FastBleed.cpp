@@ -5,10 +5,11 @@
 #include <iostream>
 #include <functional>
 #include <boost/program_options.hpp>
-#include "ui/feedback.hpp"                                      // cirno::error()/warn()
 #include "properties.hpp"                                       // Default values; Build properties
 #include "platform/platform.hpp"                                // cirno::init() returns platform-non-specifically abstraction
 #include "config/config.hpp"                                    // Config <-> FastBleed layer
+#include "ui/feedback.hpp"                                      // cirno::error()/warn()
+//#include "ui/gui.hpp"                                           // Qt GUI
 
 /*************[Default values]*************/
 static float cps                        = c_cps;                // Click Per Second
@@ -16,11 +17,14 @@ static float relation                   = c_relation;           // Hold time / R
 static unsigned int entropy_variation   = c_entropy_variation;  // Introduces randomness in the timings of pressing
 static unsigned int actions_cooldown    = c_actions_cooldown;
 static bool be_verbose                  = false;
+static std::string config_path          = "./config.json";
+bool use_gui                     = false;
 /*/*/
 
 bool override_wayland, override_xorg;
-namespace po = boost::program_options;
 int parse_args(int argc, char* argv[]);
+
+namespace po = boost::program_options;
 
 typedef struct s_timings {
     unsigned int hold_time;
@@ -33,7 +37,10 @@ void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timi
 
 int main(int argc, char* argv[]) {
     parse_args(argc, argv);
-    cirno::c_config config {"./config.json"};
+    cirno::c_config config {config_path};
+    //cirno::gui_feedback gui {argc, argv};
+    //gui.popup();
+    
 
     std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
     int status = control->init();                                                   // Initialize implementation
@@ -42,7 +49,6 @@ int main(int argc, char* argv[]) {
         case -100:
             std::cerr << "No displays found.\n";
             break;
-
         // Unix:
         case -202:
             std::cerr << "This build completed without X11 support.\n";
@@ -81,6 +87,8 @@ int parse_args(int argc, char* argv[]) {
     desc.add_options()
         ("help,h", "Help page")
         ("verbose,v", "Be verbose")
+        ("gui,g", "Use graphic interface")
+        ("config,p", po::value<std::string>(&config_path), "Path to config file")
         ("cps,c", po::value<float>(&cps), "Clicks Per Second: float (0.0:500.0)")
         ("relation,r", po::value<float>(&relation), "'Hold time'/'Release time' relation: float (0.0:500/cps)")
         //("entropy,e", po::value<unsigned int>(&entropy_variation), "Entropy range (value+-delays): uint [0:?)")
@@ -102,6 +110,9 @@ int parse_args(int argc, char* argv[]) {
         }
     #endif
 
+    if (args.count("gui")) {
+        use_gui = true;
+    }
     if (args.count("verbose")) {
         be_verbose = true;
     }
@@ -198,12 +209,15 @@ void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timi
                             break;
                         
                         case ACT_MOVE:
+                            // Not implemented
                             break;
                         
                         case ACT_SYS_EXEC:
+                            // Not implemented
                             break;
                         
                         case ACT_TEXT_TYPE:
+                            // Not implemented
                             break;
                         
                         default:
