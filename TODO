@@ -1,9 +1,10 @@
-=> W*nd*ws: support                     10%+
+=> W*nd*ws: support                     15%+
 => *: GUI                               5%
 => *: * keyboard events handling        0%
 
+=> *: Reduce preprocessor usage         --
 => Unix: Wayland support                9%
-=> *: Get rid of boost::program_options 0%
+=> *: Get rid of boost::program_options 5%+
 => *: Background service                0%
 
 => MacOS: support                       0%

@@ -7,13 +7,15 @@ project(            FastBleed
 
 ### OPTIONS ###
 option(USE_GUI "Build with Qt GUI support" OFF)
+option(USE_BOOST "Use BOOST:program_options" ON)
 
 ### COMPILE PROPERTIES ###
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+if (!WIN32)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
 
 ### SRC FILES ###
 file(GLOB_RECURSE SRCFILES "./src/FastBleed.cpp" "./src/config/*.cpp" "./src/utils/*.cpp" "./src/ui/*.cpp")
@@ -38,11 +40,14 @@ link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson/src)
 target_link_libraries   (${PROJECT_NAME} simdjson)
 
 ### BOOST ###
-find_package            (Boost REQUIRED COMPONENTS program_options)
-include_directories     (${Boost_INCLUDE_DIRS})
-link_directories        (${Boost_LIBRARY_DIRS})
-add_definitions         (${Boost_DEFINITIONS})
-target_link_libraries   (${PROJECT_NAME} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+if (USE_BOOST)
+    add_compile_definitions (USE_BOOST)
+    find_package            (Boost REQUIRED COMPONENTS program_options)
+    include_directories     (${Boost_INCLUDE_DIRS})
+    link_directories        (${Boost_LIBRARY_DIRS})
+    add_definitions         (${Boost_DEFINITIONS})
+    target_link_libraries   (${PROJECT_NAME} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+endif()
 
 ### QT GUI ###
 if (USE_GUI)

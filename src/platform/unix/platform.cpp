@@ -6,7 +6,7 @@
 #include "../../ui/feedback.hpp"
 
 namespace cirno {
-// Pattern "FACTORY" ^.^
+
 std::shared_ptr<control_impl> user_windowing::make_api(e_windowings picked_api) {
     std::shared_ptr<control_impl> debug;
     switch (picked_api){

@@ -4,12 +4,16 @@
 #include <thread>
 #include <iostream>
 #include <functional>
-#include <boost/program_options.hpp>
 #include "properties.hpp"                                       // Default values; Build properties
 #include "platform/platform.hpp"                                // cirno::init() returns platform-non-specifically abstraction
 #include "config/config.hpp"                                    // Config <-> FastBleed layer
 #include "ui/feedback.hpp"                                      // cirno::error()/warn()
 //#include "ui/gui.hpp"                                           // Qt GUI
+
+#ifdef USE_BOOST
+    #include <boost/program_options.hpp>
+    namespace po = boost::program_options;
+#endif
 
 /*************[Default values]*************/
 static float cps                        = c_cps;                // Click Per Second
@@ -23,8 +27,6 @@ bool use_gui                     = false;
 
 bool override_wayland, override_xorg;
 int parse_args(int argc, char* argv[]);
-
-namespace po = boost::program_options;
 
 typedef struct s_timings {
     unsigned int hold_time;
@@ -83,6 +85,7 @@ int main(int argc, char* argv[]) {
 }
 
 int parse_args(int argc, char* argv[]) {
+#ifdef USE_BOOST
     po::options_description desc("Usage: gofra [ options ... ]\n\tWhere options");
     desc.add_options()
         ("help,h", "Help page")
@@ -120,7 +123,7 @@ int parse_args(int argc, char* argv[]) {
         std::cout << desc << std::endl;
         exit(0);
     }
-
+#endif
     return 0;
 }
 
