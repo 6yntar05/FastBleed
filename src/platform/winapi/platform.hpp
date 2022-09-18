@@ -6,9 +6,9 @@ struct s_event_decl;
 
 namespace cirno {
 
-class windows_windowing {
+class control_impl {
 public:
-    ~windows_windowing();
+    ~control_impl();
     int init();
     int action_button(int keysym, bool pressing);
     int handle_events(struct s_event_decl *events_decl);
@@ -16,9 +16,9 @@ public:
 
 class user_windowing {
 public:
-    std::shared_ptr<windows_windowing> make_api();
+    std::shared_ptr<control_impl> make_api();
 };
 
-std::shared_ptr<windows_windowing> get_platform();
+std::shared_ptr<control_impl> get_platform();
 
 }//namespace cirno

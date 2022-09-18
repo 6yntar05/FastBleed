@@ -1,4 +1,5 @@
 #include "platform.hpp"
+#include <X11/X.h>
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -6,13 +7,13 @@
 
 namespace cirno {
 // Pattern "FACTORY" ^.^
-std::shared_ptr<control_impl> user_windowing::make_api(int picked_api) {
+std::shared_ptr<control_impl> user_windowing::make_api(e_windowings picked_api) {
     std::shared_ptr<control_impl> debug;
     switch (picked_api){
-        case 1:
+        case X11:
             debug = std::make_shared<x11_windowing>();
             break;
-        case 2:
+        case Wayland:
             debug = std::make_shared<wayland_windowing>();
             break;
         default:
@@ -33,16 +34,16 @@ std::shared_ptr<control_impl> get_platform() {
     user_windowing windowing;
     if ((std::getenv("WAYLAND_DISPLAY") || override_wayland) && (!override_xorg)) {
         #ifdef USE_WAYLAND
-            return windowing.make_api(2);
+            return windowing.make_api(Wayland);
         #else
             warn("This build completed without Wayland support. Overriding X11.");
-            return windowing.make_api(1);
+            return windowing.make_api(X11);
         #endif
 
     } else if (std::getenv("DISPLAY") || override_xorg) {
-        return windowing.make_api(1);
+        return windowing.make_api(X11);
     } else {
-        return windowing.make_api(0);
+        return windowing.make_api(Placeholder);
     }
 }
 

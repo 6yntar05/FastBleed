@@ -5,12 +5,12 @@
 #include "../../ui/feedback.hpp"
 
 namespace cirno {
-// Pattern "FACTORY" ^.^
-std::shared_ptr<windows_windowing> user_windowing::make_api() {
-    return std::make_shared<windows_windowing>();
+
+std::shared_ptr<control_impl> user_windowing::make_api() {
+    return std::make_shared<control_impl>();
 };
 
-std::shared_ptr<windows_windowing> get_platform() {
+std::shared_ptr<control_impl> get_platform() {
     user_windowing windowing;
     return windowing.make_api();
 }

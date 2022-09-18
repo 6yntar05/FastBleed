@@ -7,6 +7,7 @@
 
 extern bool override_wayland, override_xorg;
 struct s_event_decl;
+enum e_windowings { X11, Wayland, Placeholder };
 
 namespace cirno {
 
@@ -36,7 +37,7 @@ public:
 
 class user_windowing {
 public:
-    std::shared_ptr<control_impl> make_api(int picked_api);
+    std::shared_ptr<control_impl> make_api(e_windowings picked_api);
 };
 
 std::shared_ptr<control_impl> get_platform();
