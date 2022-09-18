@@ -3,7 +3,8 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
-#include "X11.hpp"
+#include "platform.hpp"
+#include "../../config/config.hpp"
 #include "../../ui/feedback.hpp"
 
 #ifdef USE_X11
@@ -15,6 +16,15 @@
     #include <X11/keysym.h>
     #include <X11/extensions/record.h>
 #endif
+
+/*
+struct s_event_decl {
+    unsigned int count;
+    unsigned int *ev_button;
+    bool *flag;
+    unsigned int *act_button;
+};
+*/
 
 namespace cirno {
 

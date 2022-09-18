@@ -1,9 +1,9 @@
 #include "gui.hpp"
-#include <QApplication>
+//#include <QApplication>
 //#include <qapplication.h>
-#include <QMainWindow>
+//#include <QMainWindow>
 #include <iostream>
-#include <qmainwindow.h>
+//#include <qmainwindow.h>
 
 namespace cirno {
 
@@ -31,10 +31,10 @@ MainWindow::~MainWindow()
 
 gui_feedback::gui_feedback(int argc, char* argv[]) {
     std::cerr << "CALL "<<argc<<":"<<argv[0]<<"\n";
-    QApplication qapp(argc, argv);
+    //QApplication qapp(argc, argv);
     //MainWindow mwin;
     //mwin.show();
-    qapp.exec();
+    //qapp.exec();
 }
 
 void gui_feedback::popup() {

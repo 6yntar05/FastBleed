@@ -12,8 +12,8 @@ option(USE_GUI "Build with Qt GUI support" OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
-#add_compile_options(-fsanitize=address)
-#add_link_options(-fsanitize=address)
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
 
 ### SRC FILES ###
 file(GLOB_RECURSE SRCFILES "./src/FastBleed.cpp" "./src/config/*.cpp" "./src/utils/*.cpp" "./src/ui/*.cpp")

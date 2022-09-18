@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-server-protocol.h>
-#include "Wayland.hpp"
+#include "platform.hpp"
+#include "../../config/config.hpp"
 #include "../../ui/feedback.hpp"
 
 #ifdef USE_WAYLAND
@@ -12,6 +13,15 @@
     #include <wayland-server.h>
     #include <wayland-client-protocol.h>
 #endif
+
+/*
+struct s_event_decl {
+    unsigned int count;
+    unsigned int *ev_button;
+    bool *flag;
+    unsigned int *act_button;
+};
+*/
 
 namespace cirno {
 
