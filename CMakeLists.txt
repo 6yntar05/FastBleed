@@ -7,7 +7,9 @@ project(            FastBleed
 )
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-Wall -Wno-unused-parameter -Wall -Wextra -Wpedantic)
+add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
 
 option(USE_GUI "Build with Qt GUI support" ON)
 
@@ -33,7 +35,7 @@ if (UNIX)
         endif ()
 
 elseif (WIN32)
-    message( FATAL_ERROR "Windows is not supported for now.")
+    message("Windows is not supported for now.")
     
 elseif (APPLE)
     option(USE_COLORS "Use colorful output" ON)
