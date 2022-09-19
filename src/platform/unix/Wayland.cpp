@@ -3,7 +3,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wayland-server-protocol.h>
+#ifdef USE_WAYLAND
+    #include <wayland-server-protocol.h>
+#endif
 #include "platform.hpp"
 #include "../../config/config.hpp"
 #include "../../ui/feedback.hpp"

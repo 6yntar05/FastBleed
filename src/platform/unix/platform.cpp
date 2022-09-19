@@ -1,5 +1,4 @@
 #include "platform.hpp"
-#include <X11/X.h>
 #include <iostream>
 #include <vector>
 #include <memory>
