@@ -12,10 +12,14 @@ option(USE_BOOST "Use BOOST:program_options" ON)
 ### COMPILE PROPERTIES ###
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if (!WIN32)
-    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fsanitize=address)
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fdiagnostics-color=always -fsanitize=address)
     add_link_options(-fsanitize=address)
-endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fcolor-diagnostics -fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif ()
 
 ### SRC FILES ###
 file(GLOB_RECURSE SRCFILES "./src/FastBleed.cpp" "./src/config/*.cpp" "./src/utils/*.cpp" "./src/ui/*.cpp")
@@ -28,7 +32,9 @@ elseif (APPLE)
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/apple/*.cpp")
 endif()
 
+include_directories(AFTER SYSTEM ./include)
 add_executable(${PROJECT_NAME} ${SRCFILES})
+target_include_directories(${PROJECT_NAME} PRIVATE ./include)
 
 ### SIMDJSON ###
 add_subdirectory        (./libs/simdjson)

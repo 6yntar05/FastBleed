@@ -1,9 +1,9 @@
-#include "platform.hpp"
+#include "platform/unix/platform.hpp"
 #include <X11/X.h>
 #include <iostream>
 #include <vector>
 #include <memory>
-#include "../../ui/feedback.hpp"
+#include "ui/feedback.hpp"
 
 namespace cirno {
 

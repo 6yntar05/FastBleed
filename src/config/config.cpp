@@ -1,5 +1,5 @@
-#include "./config.hpp"
-#include "../ui/feedback.hpp"
+#include "config/config.hpp"
+#include "ui/feedback.hpp"
 
 #include "simdjson.h"
 #include <unordered_map>

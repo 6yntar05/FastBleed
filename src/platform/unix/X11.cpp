@@ -1,11 +1,10 @@
-#include "../../properties.hpp"
+#include "properties.hpp"
 #include <vector>
 #include <chrono>
 #include <thread>
 #include <iostream>
-#include "platform.hpp"
-#include "../../config/config.hpp"
-#include "../../ui/feedback.hpp"
+#include "platform/unix/platform.hpp"
+#include "ui/feedback.hpp"
 
 #ifdef USE_X11
     #include <X11/X.h>
@@ -16,15 +15,6 @@
     #include <X11/keysym.h>
     #include <X11/extensions/record.h>
 #endif
-
-/*
-struct s_event_decl {
-    unsigned int count;
-    unsigned int *ev_button;
-    bool *flag;
-    unsigned int *act_button;
-};
-*/
 
 namespace cirno {
 

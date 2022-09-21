@@ -1,27 +1,17 @@
-#include "../../properties.hpp"
+#include "properties.hpp"
 #include <iostream>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-server-protocol.h>
-#include "platform.hpp"
-#include "../../config/config.hpp"
-#include "../../ui/feedback.hpp"
+#include "platform/unix/platform.hpp"
+#include "ui/feedback.hpp"
 
 #ifdef USE_WAYLAND
     #include <wayland-client.h>
     #include <wayland-server.h>
     #include <wayland-client-protocol.h>
 #endif
-
-/*
-struct s_event_decl {
-    unsigned int count;
-    unsigned int *ev_button;
-    bool *flag;
-    unsigned int *act_button;
-};
-*/
 
 namespace cirno {
 

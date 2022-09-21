@@ -1,5 +1,6 @@
 #include <cmath>
 #include <chrono>
+#include <cstdarg>
 #include <random>
 #include <thread>
 #include <iostream>
@@ -22,11 +23,9 @@ static unsigned int entropy_variation   = c_entropy_variation;  // Introduces ra
 static unsigned int actions_cooldown    = c_actions_cooldown;
 static bool be_verbose                  = false;
 static std::string config_path          = "./config.json";
-bool use_gui                     = false;
 /*/*/
 
-bool override_wayland, override_xorg;
-int parse_args(int argc, char* argv[]);
+bool override_wayland, override_xorg, use_gui = false;
 
 typedef struct s_timings {
     unsigned int hold_time;
@@ -35,14 +34,14 @@ typedef struct s_timings {
 } t_timings;
 t_timings calculate_timings(float cps, float relation, unsigned int entropy_variation);
 
-void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, struct s_event_decl actions);
+int parse_args(int argc, char* argv[]);
+void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, s_event_decl *actions);
 
 int main(int argc, char* argv[]) {
     parse_args(argc, argv);
     cirno::c_config config {config_path};
     //cirno::gui_feedback gui {argc, argv};
     //gui.popup();
-    
 
     std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
     int status = control->init();                                                   // Initialize implementation
@@ -71,7 +70,7 @@ int main(int argc, char* argv[]) {
     std::vector<unsigned int> vec_action_params;
 
     // Start actions handler thread
-    std::thread actions_thread(handle_actions, control, timings, events_decl);
+    std::thread actions_thread(handle_actions, control, timings, &events_decl);
     actions_thread.detach();
 
     // Call events handler
@@ -176,7 +175,7 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
     return ret;
 }
 
-void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, struct s_event_decl actions) {
+void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, s_event_decl *actions) {
     bool cooldown = false; // If nothing needs to be done
 
     std::random_device rd; std::mt19937 gen_seed(rd());
@@ -184,30 +183,30 @@ void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timi
     // ^ Introduces randomness in the timings of pressing. Makes clicks more natural. ^
 
     while (true) {
-        for (unsigned int i=0; i<actions.count; i++) {
+        for (unsigned int i = 0; i < actions->count; i++) {
 
-            if (actions.flag[i]) {
+            if (actions->flag[i]) {
                 cooldown = true;
-                for (int a = 0; a < static_cast<int>(actions.action->size()); a++) {
+                for (int a = 0; a < static_cast<int>(actions->action->size()); a++) {
 
-                    switch (actions.action->at(a)) {
+                    switch (actions->action->at(a)) {
                         case ACT_CLICK:
-                            control->action_button( actions.action_param[i].at(a) , true);
+                            control->action_button(actions->action_param[i].at(a) , true);
                             break;
                         
                         case ACT_RELEASE:
-                            control->action_button(actions.action_param[i].at(a) , false);
+                            control->action_button(actions->action_param[i].at(a) , false);
                             break;
 
                         case ACT_CLICKER:
-                            control->action_button(actions.action_param[i].at(a) , true);
+                            control->action_button(actions->action_param[i].at(a) , true);
                             std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-                            control->action_button(actions.action_param[i].at(a) , false);
+                            control->action_button(actions->action_param[i].at(a) , false);
                             std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
                             break;
                         
                         case ACT_DELAY:
-                            std::this_thread::sleep_for(std::chrono::milliseconds(actions.action_param[i].at(a)));
+                            std::this_thread::sleep_for(std::chrono::milliseconds(actions->action_param[i].at(a)));
                             cooldown = false;
                             break;
                         

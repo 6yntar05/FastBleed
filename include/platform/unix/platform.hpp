@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include "config/config.hpp"
 
 #ifdef USE_X11
     #include <X11/Xlib.h>
@@ -14,7 +15,6 @@
 #endif
 
 extern bool override_wayland, override_xorg;
-struct s_event_decl;
 enum e_windowings { X11, Wayland, Placeholder };
 
 namespace cirno {
