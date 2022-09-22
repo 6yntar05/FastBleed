@@ -137,7 +137,7 @@ namespace platform {
     x11_windowing::~x11_windowing() {}
     
     void x11_windowing::init() {
-        throw excepts::error("This build completed without Wayland support");
+        throw excepts::error("This build completed without X11 support");
     }
 
     void x11_windowing::action_button(int keysym, bool pressing) {
