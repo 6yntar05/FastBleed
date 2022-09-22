@@ -1,10 +1,12 @@
-#include "properties.hpp"
 #include <iostream>
+#include <stdexcept>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "platform/unix/platform.hpp"
 #include "ui/feedback.hpp"
+#include "runtime.hpp"
+#include <excepts.hpp>
 
 #ifdef USE_WAYLAND
     #include <wayland-client.h>
@@ -13,7 +15,7 @@
     #include <wayland-server-protocol.h>
 #endif
 
-namespace cirno {
+namespace platform {
 
 #ifdef USE_WAYLAND
 
@@ -33,6 +35,7 @@ namespace cirno {
 
     struct wl_registry_listener registry_listener = {
         pointer_register_handler,
+        {}
     };
 
 /*********************[  class wayland_windowing : control_impl {  ]**********************/
@@ -40,55 +43,57 @@ namespace cirno {
         wl_display_disconnect(display);
     }
 
-    int wayland_windowing::init() {
-        this->display = wl_display_connect(NULL);
-        
-        if (wayland_windowing::display == NULL) {
-            return -1;
-        }
-        wayland_windowing::registry = wl_display_get_registry(wayland_windowing::display);
-        if (wayland_windowing::registry == NULL) {
-            return -2;
+    void wayland_windowing::init() {
+        if (this->display = wl_display_connect(NULL); this->display == NULL) {
+            throw excepts::error("Display is null", "Wayland.cpp");
         }
 
-        wl_registry_add_listener(wayland_windowing::registry, &registry_listener, NULL);
+        if (this->registry = wl_display_get_registry(this->display); this->registry == NULL) {
+            throw excepts::error("Display registry is null", "Wayland.cpp");
+        }
+
+        wl_registry_add_listener(this->registry, &registry_listener, NULL);
         
-        wl_display_dispatch(wayland_windowing::display);
-        wl_display_roundtrip(wayland_windowing::display);
+        wl_display_dispatch(this->display);
+        wl_display_roundtrip(this->display);
 
         //wl_keyboard *keyboard = wl_seat_get_keyboard(this->seat);
         //wl_pointer *pointer = wl_seat_get_pointer(this->seat);
         //wl_pointer_send_button(this->resource, 0, 0, 1, 1);
 
-        wl_registry_destroy(wayland_windowing::registry);
-
-        return 0;
+        wl_registry_destroy(this->registry);
     }
 
-    int wayland_windowing::action_button(int keysym, bool pressing) {
+    void wayland_windowing::action_button(int keysym, bool pressing) {
         //display = wl_display_connect(NULL);
         std::cerr << "Not implemented for now!\n";
-        return -1;
+        throw excepts::error("Not implemented", "Wayland.cpp");
     }
 
-    int wayland_windowing::handle_events(struct s_event_decl *events_decl) {
-        /*
-        display = wl_display_connect(NULL);
-        std::cerr << "Not implemented for now!\n";
-        */
-        return -1;
+    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+        //display = wl_display_connect(NULL);
+        throw excepts::error("Not implemented", "Wayland.cpp");
     }
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/
 
 #else /* If this build completed whithout Wayland support */
 
 /*********************[  class wayland_windowing : control_impl {  ]**********************/
-    wayland_windowing::~wayland_windowing()                                 {}
-    int wayland_windowing::init()                                           {return -202;}
-    int wayland_windowing::action_button(int keysym, bool pressing)         {return -1;}
-    int wayland_windowing::handle_events(struct s_event_decl *events_decl)  {return -1;}
+    wayland_windowing::~wayland_windowing() {}
+
+    int wayland_windowing::init() {
+        throw excepts::error("This build completed without Wayland support");
+    }
+
+    void wayland_windowing::action_button(int keysym, bool pressing) {
+        throw excepts::error("This build completed without Wayland support");
+    }
+
+    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+        throw excepts::error("This build completed without Wayland support");
+    }
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/
 
 #endif
 
-}//cirno
+} // namespace platform

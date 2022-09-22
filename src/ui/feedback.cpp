@@ -1,35 +1,26 @@
-//#include "gui.hpp"
-
 #include <iostream>
-#include <string>
+#include "ui/feedback.hpp"
 
-#ifdef USE_COLORS
-    #define CLR "\033[0m"
-    #define RED "\033[31m"
-    #define YEL "\033[33m"
-    #define BOLD "\033[1m"
-#else
-    #define CLR ""
-    #define RED ""
-    #define YEL ""
-    #define BOLD ""
-#endif
-
-namespace cirno {
+namespace ui {
 
     void error(std::string msg) {
-        std::cerr << "["<<RED<<BOLD<<"ERROR"<<CLR<<"] "
+        std::cerr << "[" <<RED<<BOLD<<"ERROR"<<CLR<< "] "
             << BOLD<<msg<<CLR 
             << std::endl;
     }
+
     void warn(std::string msg) {
-        std::cerr << "["<<YEL<<BOLD<<"WARN!"<<CLR<<"] "
+        std::cerr << "[" <<YEL<<BOLD<<"WARN!"<<CLR<< "] "
             << BOLD<<msg<<CLR
             << std::endl;
     }
-    void general_state(bool state) {
-        if (state)
-            std::cout << "[INFO_] Starting action handler.\n";
+
+    void info(std::string msg) {
+        std::cout << "[INFO_] " << msg << std::endl;
+    }
+
+    void msg(std::string msg) {
+        std::cout << msg << std::endl;
     }
 
 }

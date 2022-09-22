@@ -1,4 +1,4 @@
-#include "config.hpp"
+#include "utils/config.hpp"
 #include "ui/feedback.hpp"
 
 #include "simdjson.h"
@@ -8,11 +8,12 @@
 #include <iostream>
 #include <iterator>
 
-namespace cirno {
+namespace utils {
 
 using namespace simdjson;
 
-e_actions to_action(std::string str) {
+/// Interpret string to enum e_actions
+e_actions c_config::to_action(std::string str) {
     std::unordered_map<std::string, e_actions> umap;
     umap["DELAY"] = ACT_DELAY;
     umap["CLICK"] = ACT_CLICK;
@@ -23,7 +24,7 @@ e_actions to_action(std::string str) {
     umap["SYS_EXEC"] = ACT_SYS_EXEC;
 
     if (umap.find(str) == umap.end())
-        cirno::error("Config syntax error : Invalid action \"" + str + "\"");
+        ui::error("Config syntax error : Invalid action \"" + str + "\"");
 
     return umap.at(str);
 }
@@ -97,4 +98,4 @@ s_event_decl c_config::parse() {
 
 void c_config::sync() { return; }
 
-} // namespace cirno
+} // namespace utils

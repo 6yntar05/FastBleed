@@ -1,17 +1,16 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include "runtime.hpp"
 
-struct s_event_decl;
-
-namespace cirno {
+namespace platform {
 
 class control_impl {
 public:
     ~control_impl();
-    int init();
-    int action_button(int keysym, bool pressing);
-    int handle_events(struct s_event_decl *events_decl);
+    void init();
+    void action_button(int keysym, bool pressing);
+    void handle_events(s_event_decl *events_decl);
 };
 
 class user_windowing {
@@ -21,4 +20,4 @@ public:
 
 std::shared_ptr<control_impl> get_platform();
 
-}//namespace cirno
+} // namespace platform

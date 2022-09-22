@@ -1,48 +1,44 @@
 #include <thread>
+#include <chrono>
+#include <random>
+#include <string>
 #include <iostream>
 #include <functional>
 
-#include "properties.hpp"                                       // Default values; Build properties
-#include "config.hpp"                                           // Config <-> FastBleed layer
-#include "ui/feedback.hpp"                                      // cirno::error()/warn()
-#include "utils/args.hpp"                                       // parse_args()
-#include "utils/timings.hpp"                                    // calculate_timings()
-#include "platform/platform.hpp"                                // cirno::init() returns platform-non-specifically abstraction
+#include "utils/config.hpp"                                     // Config <-> FastBleed layer
+#include "properties.hpp"                                       // Constants
+#include "ui/feedback.hpp"                                      // ui::info/warn/error
+#include "utils/args.hpp"                                       // utils::parse_args()
+#include "utils/timings.hpp"                                    // utils::calculate_timings()
+#include "platform/platform.hpp"                                // platform::init() returns platform-non-specifically abstraction
+#include "runtime.hpp"                                          // Flags, constants and shared points
 
-/*************[Default values]*************/
-float cps                        = c_cps;                // Click Per Second
-float relation                   = c_relation;           // Hold time / Release time
-unsigned int entropy_variation   = c_entropy_variation;  // Introduces randomness in the timings of pressing
-unsigned int actions_cooldown    = c_actions_cooldown;
-std::string config_path          = c_config_path;
-bool override_wayland, override_xorg, use_gui = false, be_verbose = false;
+/// Load hardcoded vars
+float cps                       = c_cps;
+float relation                  = c_relation;
+unsigned int entropy_variation  = c_entropy_variation;
+unsigned int actions_cooldown   = c_actions_cooldown;
+std::string config_path         = c_config_path;
+bool use_gui                    = c_use_gui;
 
-void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, s_event_decl *actions);
+bool override_wayland = false;
+bool override_xorg = false;
+bool be_verbose = false;
+
+void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_timings timings, s_event_decl *actions);
 
 int main(int argc, char* argv[]) {
-    parse_args(argc, argv);
-    cirno::c_config config {config_path};
+    utils::parse_args(argc, argv);
+    utils::c_config config {config_path};
 
-    std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
-    int status = control->init();                                                   // Initialize implementation
-    switch (status) {
-        // Generic:
-        case -100:
-            std::cerr << "No displays found.\n";
-            break;
-        // Unix:
-        case -202:
-            std::cerr << "This build completed without X11 support.\n";
-            break;
-        case -201:
-            std::cerr << "This build completed without Wayland support.\n";
-            break;
-    }; if (status < 0) {
-        cirno::error("Failed to initialize implementation");
-        exit(status);
-    }
+    // Pick platform-non-specifically abstraction
+    std::shared_ptr<platform::control_impl> control = platform::get_platform();
 
-    t_timings timings = calculate_timings(cps, relation, entropy_variation);        // Calculate delays around CPS/Relation value
+    // Initialize implementation
+    control->init();
+
+    // Calculate delays around CPS/Relation value
+    utils::t_timings timings = utils::calculate_timings(cps, relation, entropy_variation);
     
     // Read config -> declare events
     s_event_decl events_decl = config.parse();
@@ -54,16 +50,13 @@ int main(int argc, char* argv[]) {
     actions_thread.detach();
 
     // Call events handler
-    cirno::general_state(true);
-    if (control->handle_events(&events_decl) != 0) {
-        cirno::error("Unable to handling events!");
-        exit(1);
-    }
+    ui::info("Starting action handler");
+    control->handle_events(&events_decl);
     
     return 0;
 }
 
-void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, s_event_decl *actions) {
+void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_timings timings, s_event_decl *actions) {
     bool cooldown = false; // If nothing needs to be done
 
     std::random_device rd; std::mt19937 gen_seed(rd());

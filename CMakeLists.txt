@@ -14,11 +14,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fdiagnostics-color=always -fsanitize=address)
-    add_link_options(-fsanitize=address)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fdiagnostics-color=always -O3)
+
+    if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
+        add_compile_options(-O0 -g -fsanitize=address)
+        add_link_options(-fsanitize=address)
+    endif ()
+
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fcolor-diagnostics -fsanitize=address)
-    add_link_options(-fsanitize=address)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fcolor-diagnostics -O3)
+
+    if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
+        add_compile_options(-O0 -g -fsanitize=address)
+        add_link_options(-fsanitize=address)
+    endif ()
+
 endif ()
 
 ### SRC FILES ###

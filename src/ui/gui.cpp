@@ -5,7 +5,7 @@
 #include <iostream>
 //#include <qmainwindow.h>
 
-namespace cirno {
+namespace ui {
 
 /*
 class MainWindow : public QMainWindow {
@@ -41,4 +41,4 @@ void gui_feedback::popup() {
     //
 }
 
-} // namespace cirno
+} // namespace ui

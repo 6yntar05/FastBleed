@@ -1,41 +1,44 @@
-#include "platform/unix/platform.hpp"
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 #include <memory>
+#include "platform/unix/platform.hpp"
 #include "ui/feedback.hpp"
+#include "runtime.hpp"
+#include "excepts.hpp"
 
-namespace cirno {
+namespace platform {
 
 std::shared_ptr<control_impl> user_windowing::make_api(e_windowings picked_api) {
-    std::shared_ptr<control_impl> debug;
     switch (picked_api){
         case X11:
-            debug = std::make_shared<x11_windowing>();
+            return std::make_shared<x11_windowing>();
             break;
         case Wayland:
-            debug = std::make_shared<wayland_windowing>();
+            return std::make_shared<wayland_windowing>();
             break;
         default:
-            class plug_windowing : public control_impl{
+            class none_windowing : public control_impl{
             public:
-                ~plug_windowing()                                   {}
-                int init()                                          override {return -100;}
-                int action_button(int keysym, bool pressing)        override {return -1;}
-                int handle_events(struct s_event_decl *events_decl) override {return -1;}
+                ~none_windowing()                                   {}
+                void init()                                          override {
+                    throw excepts::error("Unix platform chooser returns emply implementations", "platform.cpp");
+                }
+                void action_button(int keysym, bool pressing)       override {}
+                void handle_events(s_event_decl *events_decl)       override {}
             };
-            debug = std::make_shared<plug_windowing>();
+            return std::make_shared<none_windowing>();
     };
-
-    return debug;
 };
 
+/// Returns shared_ptr to implementation class
 std::shared_ptr<control_impl> get_platform() {
     user_windowing windowing;
     if ((std::getenv("WAYLAND_DISPLAY") || override_wayland) && (!override_xorg)) {
         #ifdef USE_WAYLAND
             return windowing.make_api(Wayland);
         #else
-            warn("This build completed without Wayland support. Overriding X11.");
+            ui::warn("This build completed without Wayland support. Overriding X11.");
             return windowing.make_api(X11);
         #endif
 
@@ -46,4 +49,4 @@ std::shared_ptr<control_impl> get_platform() {
     }
 }
 
-}//namespace cirno
+} // namespace platform

@@ -1,7 +1,7 @@
 //#include <QApplication>
 //#include <qapplication.h>
 
-namespace cirno {
+namespace ui {
 
 class gui_feedback {
 //private:

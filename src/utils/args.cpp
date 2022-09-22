@@ -1,9 +1,14 @@
+#include <iostream>
+
 #include "utils/args.hpp"
+#include "runtime.hpp"
 
 #ifdef USE_BOOST
     #include <boost/program_options.hpp>
     namespace po = boost::program_options;
 #endif
+
+namespace utils {
 
 int parse_args(int argc, char* argv[]) {
 #ifdef USE_BOOST
@@ -15,7 +20,7 @@ int parse_args(int argc, char* argv[]) {
         ("config,p", po::value<std::string>(&config_path), "Path to config file")
         ("cps,c", po::value<float>(&cps), "Clicks Per Second: float (0.0:500.0)")
         ("relation,r", po::value<float>(&relation), "'Hold time'/'Release time' relation: float (0.0:500/cps)")
-        //("entropy,e", po::value<unsigned int>(&entropy_variation), "Entropy range (value+-delays): uint [0:?)")
+        ("entropy,e", po::value<unsigned int>(&entropy_variation), "Entropy range (value+-delays): uint [0:?)")
         #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
             ("xorg,x", "Override Xorg")
             ("wayland,w", "Override Wayland")
@@ -45,5 +50,8 @@ int parse_args(int argc, char* argv[]) {
         exit(0);
     }
 #endif
+
     return 0;
 }
+
+} // namespace utils

@@ -1,9 +1,20 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <vector>
 
+/// Runtime constants
+extern float cps;
+extern float relation;
+extern unsigned int entropy_variation;
+extern unsigned int actions_cooldown;
+extern std::string config_path;
+extern bool use_gui;
+
+/// Runtime flags
+extern bool override_wayland, override_xorg, be_verbose;
+
+/// Available actions
 enum e_actions {
     ACT_DELAY,
     ACT_CLICK,
@@ -15,6 +26,7 @@ enum e_actions {
     ACT_NULL
 };
 
+/// Shared struct
 struct s_event_decl {
     unsigned int count;
     unsigned int *ev_button;
@@ -22,26 +34,3 @@ struct s_event_decl {
     std::vector<e_actions> *action;
     std::vector<unsigned int> *action_param;
 };
-
-namespace cirno {
-
-e_actions to_action(std::string str);
-
-class c_config {
-private:
-    std::string PATH;
-    s_event_decl ret;
-    bool allocated = false;
-
-public:
-    c_config(std::string PATH);
-    ~c_config();
-
-    void allocate(unsigned int count);
-    void deallocate();
-
-    s_event_decl parse();
-    void sync();
-};
-
-} // namespace cirno

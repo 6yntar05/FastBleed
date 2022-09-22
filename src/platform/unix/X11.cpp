@@ -5,6 +5,8 @@
 #include <iostream>
 #include "platform/unix/platform.hpp"
 #include "ui/feedback.hpp"
+#include "runtime.hpp"
+#include "excepts.hpp"
 
 #ifdef USE_X11
     #include <X11/X.h>
@@ -16,7 +18,7 @@
     #include <X11/extensions/record.h>
 #endif
 
-namespace cirno {
+namespace platform {
 
 #ifdef USE_X11
 
@@ -24,13 +26,13 @@ namespace cirno {
         int work_flag;
         Display *lclDisplay, *recDisplay;
         XRecordContext context;
-        struct s_event_decl events_decl;
+        s_event_decl events_decl;
     } s_XHeap;
 
     void eventCallback(XPointer xheap, XRecordInterceptData *data) {
         s_XHeap *heap=(s_XHeap *) xheap;
         unsigned int type, button;
-        struct s_event_decl events = heap->events_decl;
+        s_event_decl *events = &heap->events_decl;
 
         if (data->category != XRecordFromServer || heap->work_flag == 0) {
             XRecordFreeData(data);
@@ -41,17 +43,17 @@ namespace cirno {
 
         switch (type) {
             case ButtonPress:
-                for (unsigned int i=0; i<events.count; i++) {
-                    if (button == events.ev_button[i]) {
-                        events.flag[i] = true;
+                for (unsigned int i=0; i<events->count; i++) {
+                    if (button == events->ev_button[i]) {
+                        events->flag[i] = true;
                     }
                 }
                 break;
 
             case ButtonRelease:
-                for (unsigned int i=0; i<events.count; i++) {
-                    if (button == events.ev_button[i]) {
-                        events.flag[i] = false;
+                for (unsigned int i=0; i<events->count; i++) {
+                    if (button == events->ev_button[i]) {
+                        events->flag[i] = false;
                     }
                 }
                 break;
@@ -70,30 +72,26 @@ namespace cirno {
         }
     }
 
-    int x11_windowing::init() {
+    void x11_windowing::init() {
         x11_windowing::lclDisplay = XOpenDisplay(0); //Take out!
         x11_windowing::recDisplay = XOpenDisplay(0);
         if ((x11_windowing::lclDisplay == NULL)||(x11_windowing::recDisplay == NULL)) {
-            error("Unnable to open X Display!");
-            return -1;
+            throw excepts::error("Display is null", "Xorg.cpp");
         };
         int unnecessary;
         if (!XRecordQueryVersion(recDisplay, &unnecessary, &unnecessary)) {
-            error("XRecord extension is not found!");
-            return -1;
+            throw excepts::error("XRecord extension is not found!", "Xorg.cpp");
         }
         x11_windowing::lclScreen = DefaultScreen(x11_windowing::lclDisplay);
         x11_windowing::rootWindow = RootWindow(x11_windowing::lclDisplay, x11_windowing::lclScreen);
-        return 0;
     }
 
-    int x11_windowing::action_button(int keysym, bool pressing) {
+    void x11_windowing::action_button(int keysym, bool pressing) {
         XTestFakeButtonEvent(x11_windowing::lclDisplay, keysym, pressing, CurrentTime);
         XFlush(x11_windowing::lclDisplay);
-        return 0;
     }
 
-    int x11_windowing::handle_events(struct s_event_decl *events_decl) {
+    void x11_windowing::handle_events(struct s_event_decl *events_decl) {
         XRecordContext context;
         XRecordRange *allocRange;
         XRecordClientSpec clientSpec;
@@ -101,8 +99,7 @@ namespace cirno {
 
         allocRange = XRecordAllocRange();
         if (!allocRange) {
-            error("Failed to call XRecordAllocRange()");
-            return -1;
+            throw excepts::error("Failed to call XRecordAllocRange()", "Xorg.cpp");
         }
 
         allocRange->device_events.first=KeyPress;
@@ -110,8 +107,7 @@ namespace cirno {
         clientSpec=XRecordAllClients;
         context=XRecordCreateContext(x11_windowing::recDisplay, 0, &clientSpec, 1, &allocRange, 1);
         if (!context) {
-            error("Failed to get XRecord context");
-            return -2;
+            throw excepts::error("Failed to get XRecord context", "Xorg.cpp");
         }
 
         xheap.work_flag      = true;
@@ -121,8 +117,7 @@ namespace cirno {
         xheap.events_decl    = *events_decl;
         
         if (!XRecordEnableContextAsync(recDisplay, context, eventCallback, (XPointer)&xheap)) {
-            error("Failed to start async eventCallback()");
-            return -3;
+            throw excepts::error("Failed to start async eventCallback()", "Xorg.cpp");
         }
 
         while (xheap.work_flag) {
@@ -133,20 +128,27 @@ namespace cirno {
         XRecordDisableContext(lclDisplay, context);
         XRecordFreeContext(lclDisplay, context);
         XFree(allocRange);
-
-        return 0;
     }
 /*********************[ }; //class x11_windowing : control_impl ]*********************/
 
 #else /* If this build completed whithout X11 support */
 
 /*********************[  class x11_windowing : control_impl {  ]**********************/
-    x11_windowing::~x11_windowing()                                     {}
-    int x11_windowing::init()                                           {return -202;}
-    int x11_windowing::action_button(int keysym, bool pressing)         {return -1;}
-    int x11_windowing::handle_events(struct s_event_decl *events_decl)  {return -1;}
+    x11_windowing::~x11_windowing() {}
+    
+    void x11_windowing::init() {
+        throw excepts::error("This build completed without Wayland support");
+    }
+
+    void x11_windowing::action_button(int keysym, bool pressing) {
+        throw excepts::error("This build completed without X11 support");
+    }
+
+    void x11_windowing::handle_events(struct s_event_decl *events_decl) {
+        throw excepts::error("This build completed without X11 support");
+    }
 /*********************[ }; //class x11_windowing : control_impl ]*********************/
 
 #endif
 
-}//cirno
+} // namespace platform

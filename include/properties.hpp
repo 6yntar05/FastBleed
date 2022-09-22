@@ -7,3 +7,5 @@
     static const unsigned int c_entropy_variation = 5;  // Entropy range (value+-delays): uint [0:+inf) (ms)
     static const unsigned int c_actions_cooldown = 20;  // Sleep time of inactivity (ms)
     static const std::string c_config_path = "./config.json";
+    static const bool c_use_gui = false;
+    static const bool c_be_verbose = false;

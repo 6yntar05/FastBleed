@@ -3,8 +3,9 @@
 #include <vector>
 #include <memory>
 #include "ui/feedback.hpp"
+#include "excepts.hpp"
 
-namespace cirno {
+namespace platform {
 
 /*********************[  class control_impl {  ]**********************/
 
@@ -16,18 +17,19 @@ int control_impl::init() {
     return 0;
 }
 
-int control_impl::action_button(int keysym, bool pressing) {
-    return 0;
+void control_impl::action_button(int keysym, bool pressing) {
+    throw excepts::error("Not implemented", "platform.cpp");
 }
 
-int control_impl::handle_events(struct s_event_decl *events_decl) {
-    return 0;
+void control_impl::handle_events(s_event_decl *events_decl) {
+    throw excepts::error("Not implemented", "platform.cpp");
 }
 
 /*********************[  } class control_impl  ]**********************/
 
+/// Returns shared_ptr to implementation class
 std::shared_ptr<control_impl> get_platform() {
     return std::make_shared<control_impl>();
 }
 
-}//namespace cirno
+} // namespace platform

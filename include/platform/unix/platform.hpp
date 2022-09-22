@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include "config.hpp"
+#include "runtime.hpp"
 
 #ifdef USE_X11
     #include <X11/Xlib.h>
@@ -14,17 +14,16 @@
     #include <wayland-client-protocol.h>
 #endif
 
-extern bool override_wayland, override_xorg;
 enum e_windowings { X11, Wayland, Placeholder };
 
-namespace cirno {
+namespace platform {
 
 class control_impl {
 public:
-    virtual ~control_impl()                                     = default;
-    virtual int init()                                          = 0;
-    virtual int action_button(int keysym, bool pressing)        = 0;
-    virtual int handle_events(struct s_event_decl *events_decl) = 0;
+    virtual ~control_impl()                                 = default;
+    virtual void init()                                     = 0;
+    virtual void action_button(int keysym, bool pressing)   = 0;
+    virtual void handle_events(s_event_decl *events_decl)   = 0;
 };
 
 class x11_windowing : public control_impl {
@@ -37,9 +36,9 @@ private:
     #endif
 public:
     ~x11_windowing();
-    int init();
-    int action_button(int keysym, bool pressing);
-    int handle_events(struct s_event_decl *events_decl);
+    void init();
+    void action_button(int keysym, bool pressing);
+    void handle_events(s_event_decl *events_decl);
 };
 
 class wayland_windowing : public control_impl {
@@ -61,9 +60,9 @@ private:
     #endif
 public:
     ~wayland_windowing();
-    int init();
-    int action_button(int keysym, bool pressing);
-    int handle_events(struct s_event_decl *events_decl);
+    void init();
+    void action_button(int keysym, bool pressing);
+    void handle_events(s_event_decl *events_decl);
 };
 
 class user_windowing {
@@ -73,4 +72,4 @@ public:
 
 std::shared_ptr<control_impl> get_platform();
 
-}//namespace cirno
+} // namespace platform

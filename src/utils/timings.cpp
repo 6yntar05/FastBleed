@@ -1,18 +1,27 @@
+#include <cmath>
+#include <chrono>
+#include <random>
+#include <iostream>
+
 #include "utils/timings.hpp"
 #include "properties.hpp"
+#include "runtime.hpp"
 
+namespace utils {
+
+/// Calculate clicker timings by args
 t_timings calculate_timings(float cps, float relation, unsigned int entropy_variation) {
     t_timings ret;
     ret.entropy_variation = entropy_variation;
 
     if (relation<=0) {
         relation = c_relation;
-        cirno::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
+        ui::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
     }
 
     if (cps<=0) {
         cps = c_cps;
-        cirno::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
+        ui::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
     }
     float total_click_time = 1000.0f / cps;
 
@@ -39,7 +48,7 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
     }
 
     if (best == total_click_time) {
-        cirno::warn("Failed to calculate timings! Fallback values are used.");
+        ui::warn("Failed to calculate timings! Fallback values are used.");
         return calculate_timings(c_cps, c_relation, c_entropy_variation);    // Incorrect build-in values can lead to looping recursion
     }
 
@@ -49,3 +58,5 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
 
     return ret;
 }
+
+} // namespace utils
