@@ -22,9 +22,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif ()
 
 ### SRC FILES ###
-file(GLOB_RECURSE SRCFILES "./src/FastBleed.cpp" "./src/config/*.cpp" "./src/utils/*.cpp" "./src/ui/*.cpp")
-
-if (UNIX)
+file(GLOB SRCFILES "./src/*.cpp")                                               # In main dir
+file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/utils/*.cpp" "./src/ui/*.cpp")    # Other dirs
+if (UNIX)                                                                       # Compile-time platform selection
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/unix/*.cpp")
 elseif (WIN32)
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/winapi/*.cpp")

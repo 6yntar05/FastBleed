@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include "config/config.hpp"
+#include "config.hpp"
 
 #ifdef USE_X11
     #include <X11/Xlib.h>

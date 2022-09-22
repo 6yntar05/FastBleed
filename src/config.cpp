@@ -1,4 +1,4 @@
-#include "config/config.hpp"
+#include "config.hpp"
 #include "ui/feedback.hpp"
 
 #include "simdjson.h"
@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <iostream>
 #include <iterator>
-#include <string>
 
 namespace cirno {
 

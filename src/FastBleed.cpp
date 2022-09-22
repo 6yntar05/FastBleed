@@ -1,47 +1,27 @@
-#include <cmath>
-#include <chrono>
-#include <cstdarg>
-#include <random>
 #include <thread>
 #include <iostream>
 #include <functional>
-#include "properties.hpp"                                       // Default values; Build properties
-#include "platform/platform.hpp"                                // cirno::init() returns platform-non-specifically abstraction
-#include "config/config.hpp"                                    // Config <-> FastBleed layer
-#include "ui/feedback.hpp"                                      // cirno::error()/warn()
-//#include "ui/gui.hpp"                                           // Qt GUI
 
-#ifdef USE_BOOST
-    #include <boost/program_options.hpp>
-    namespace po = boost::program_options;
-#endif
+#include "properties.hpp"                                       // Default values; Build properties
+#include "config.hpp"                                           // Config <-> FastBleed layer
+#include "ui/feedback.hpp"                                      // cirno::error()/warn()
+#include "utils/args.hpp"                                       // parse_args()
+#include "utils/timings.hpp"                                    // calculate_timings()
+#include "platform/platform.hpp"                                // cirno::init() returns platform-non-specifically abstraction
 
 /*************[Default values]*************/
-static float cps                        = c_cps;                // Click Per Second
-static float relation                   = c_relation;           // Hold time / Release time
-static unsigned int entropy_variation   = c_entropy_variation;  // Introduces randomness in the timings of pressing
-static unsigned int actions_cooldown    = c_actions_cooldown;
-static bool be_verbose                  = false;
-static std::string config_path          = "./config.json";
-/*/*/
+float cps                        = c_cps;                // Click Per Second
+float relation                   = c_relation;           // Hold time / Release time
+unsigned int entropy_variation   = c_entropy_variation;  // Introduces randomness in the timings of pressing
+unsigned int actions_cooldown    = c_actions_cooldown;
+std::string config_path          = c_config_path;
+bool override_wayland, override_xorg, use_gui = false, be_verbose = false;
 
-bool override_wayland, override_xorg, use_gui = false;
-
-typedef struct s_timings {
-    unsigned int hold_time;
-    unsigned int release_time;
-    unsigned int entropy_variation;
-} t_timings;
-t_timings calculate_timings(float cps, float relation, unsigned int entropy_variation);
-
-int parse_args(int argc, char* argv[]);
 void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, s_event_decl *actions);
 
 int main(int argc, char* argv[]) {
     parse_args(argc, argv);
     cirno::c_config config {config_path};
-    //cirno::gui_feedback gui {argc, argv};
-    //gui.popup();
 
     std::shared_ptr<cirno::control_impl> control = cirno::get_platform();           // Pick platform-non-specifically abstraction
     int status = control->init();                                                   // Initialize implementation
@@ -59,7 +39,7 @@ int main(int argc, char* argv[]) {
             break;
     }; if (status < 0) {
         cirno::error("Failed to initialize implementation");
-        exit(1);
+        exit(status);
     }
 
     t_timings timings = calculate_timings(cps, relation, entropy_variation);        // Calculate delays around CPS/Relation value
@@ -81,98 +61,6 @@ int main(int argc, char* argv[]) {
     }
     
     return 0;
-}
-
-int parse_args(int argc, char* argv[]) {
-#ifdef USE_BOOST
-    po::options_description desc("Usage: gofra [ options ... ]\n\tWhere options");
-    desc.add_options()
-        ("help,h", "Help page")
-        ("verbose,v", "Be verbose")
-        ("gui,g", "Use graphic interface")
-        ("config,p", po::value<std::string>(&config_path), "Path to config file")
-        ("cps,c", po::value<float>(&cps), "Clicks Per Second: float (0.0:500.0)")
-        ("relation,r", po::value<float>(&relation), "'Hold time'/'Release time' relation: float (0.0:500/cps)")
-        //("entropy,e", po::value<unsigned int>(&entropy_variation), "Entropy range (value+-delays): uint [0:?)")
-        #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
-            ("xorg,x", "Override Xorg")
-            ("wayland,w", "Override Wayland")
-        #endif
-    ;
-    po::variables_map args;
-    po::store(po::parse_command_line(argc, argv, desc), args);
-    po::notify(args);
-
-    #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
-        if (args.count("xorg")) {
-            override_xorg = true;
-        }
-        if (args.count("wayland")) {
-            override_wayland = true;
-        }
-    #endif
-
-    if (args.count("gui")) {
-        use_gui = true;
-    }
-    if (args.count("verbose")) {
-        be_verbose = true;
-    }
-    if (args.count("help")) {
-        std::cout << desc << std::endl;
-        exit(0);
-    }
-#endif
-    return 0;
-}
-
-t_timings calculate_timings(float cps, float relation, unsigned int entropy_variation) {
-    t_timings ret;
-    ret.entropy_variation = entropy_variation;
-
-    if (relation<=0) {
-        relation = c_relation;
-        cirno::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
-    }
-
-    if (cps<=0) {
-        cps = c_cps;
-        cirno::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
-    }
-    float total_click_time = 1000.0f / cps;
-
-    // Fallback values:
-    ret.hold_time    = static_cast<unsigned int>(total_click_time) / 2;    
-    ret.release_time = static_cast<unsigned int>(total_click_time) / 2;
-
-    // An auxiliary number that helps determine the most approximate value; = biggest possible value :
-    float best       = total_click_time;
-
-    float x, y; // System of equations:
-    // /x + t = total_click_time
-    // \x / y = relation
-
-    for (x = 1; x < total_click_time - 1; x++) {
-        y = ceil(total_click_time - x);
-        if (fabs((y+x) - total_click_time) < 1) {
-            if (fabs((x/y) - relation) < fabs(best - relation)) {
-                best = x/y;
-                ret.hold_time    = static_cast<unsigned int>(x);
-                ret.release_time = static_cast<unsigned int>(y);
-            }
-        }
-    }
-
-    if (best == total_click_time) {
-        cirno::warn("Failed to calculate timings! Fallback values are used.");
-        return calculate_timings(c_cps, c_relation, c_entropy_variation);    // Incorrect build-in values can lead to looping recursion
-    }
-
-    if (be_verbose)
-        std::cerr << "[INFO ] Calculated timings => "
-            << ret.hold_time << "ms /" << ret.release_time << "ms" << std::endl;
-
-    return ret;
 }
 
 void handle_actions(std::shared_ptr<cirno::control_impl> control, t_timings timings, s_event_decl *actions) {
