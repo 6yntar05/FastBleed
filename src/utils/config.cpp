@@ -2,6 +2,8 @@
 #include "ui/feedback.hpp"
 
 #include "simdjson.h"
+#include <cstddef>
+#include <excepts.hpp>
 #include <unordered_map>
 #include <cassert>
 #include <cstdint>
@@ -56,21 +58,27 @@ s_event_decl c_config::parse() {
     std::vector<e_actions> vec_action_script;
     std::vector<unsigned int> vec_action_params;
     unsigned int count, macro_len;
-
     dom::parser parser;
-    dom::element doc = parser.load(this->PATH);
+    dom::element doc;
+
+    try {
+        doc = parser.load(this->PATH);
+    } catch (const simdjson_error& e) {
+        // Create new config
+        throw excepts::error("Unable to open config", "config.cpp");
+    }
 
     auto array = doc.at_key("items").get_array();
-    count = array.size();
+    count = static_cast<unsigned int>(array.size());
     this->allocate(count);
 
-    for (unsigned int i = 0; i < count; i++) {  // Parsing fields
+    for (size_t i = 0; i < count; i++) {  // Parsing fields
         // trigger
         this->ret.ev_button[i] = array.at(i).at_key("trigger").get_uint64();
 
         // actions
         auto _actions = array.at(i).at_key("actions").get_array();
-        macro_len = _actions.size();
+        macro_len = static_cast<unsigned int>(_actions.size());
         for (unsigned int i = 0; i < macro_len; i++) {
             vec_action_script.push_back(
                 to_action(
@@ -81,7 +89,7 @@ s_event_decl c_config::parse() {
 
         // act_params
         auto _act_params = array.at(i).at_key("act_params").get_array();
-        macro_len = _act_params.size();
+        macro_len = static_cast<unsigned int>(_act_params.size());
         for (unsigned int i = 0; i < macro_len; i++) {
             vec_action_params.push_back(static_cast<unsigned int>(_act_params.at(i).get_uint64()));
         }
@@ -96,6 +104,6 @@ s_event_decl c_config::parse() {
     return ret;
 }
 
-void c_config::sync() { return; }
+void c_config::sync() {}
 
 } // namespace utils

@@ -60,7 +60,10 @@ void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_ti
     bool cooldown = false; // If nothing needs to be done
 
     std::random_device rd; std::mt19937 gen_seed(rd());
-    std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation);
+    std::uniform_int_distribution<> entropy(
+       -static_cast<int>(timings.entropy_variation),
+        static_cast<int>(timings.entropy_variation)
+    );
     // ^ Introduces randomness in the timings of pressing. Makes clicks more natural. ^
 
     while (true) {
