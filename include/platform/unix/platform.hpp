@@ -14,7 +14,7 @@
     #include <wayland-client-protocol.h>
 #endif
 
-enum e_windowings { X11, Wayland, Placeholder };
+enum e_windowings { X11, Wayland, Empty };
 
 namespace platform {
 
@@ -67,7 +67,7 @@ public:
 
 class user_windowing {
 public:
-    std::shared_ptr<control_impl> make_api(e_windowings picked_api);
+    std::shared_ptr<control_impl> make_api(e_windowings picked_api = Empty);
 };
 
 std::shared_ptr<control_impl> get_platform();
