@@ -3,6 +3,7 @@
 
 #include "simdjson.h"
 #include <cstddef>
+#include <excepts.hpp>
 #include <unordered_map>
 #include <cassert>
 #include <cstdint>
@@ -57,9 +58,15 @@ s_event_decl c_config::parse() {
     std::vector<e_actions> vec_action_script;
     std::vector<unsigned int> vec_action_params;
     unsigned int count, macro_len;
-
     dom::parser parser;
-    dom::element doc = parser.load(this->PATH);
+    dom::element doc;
+
+    try {
+        doc = parser.load(this->PATH);
+    } catch (const simdjson_error& e) {
+        // Create new config
+        throw excepts::error("Unable to open config", "config.cpp");
+    }
 
     auto array = doc.at_key("items").get_array();
     count = static_cast<unsigned int>(array.size());

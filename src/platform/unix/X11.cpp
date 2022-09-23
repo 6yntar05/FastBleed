@@ -22,7 +22,7 @@ namespace platform {
 
 #ifdef USE_X11
 
-    typedef struct{
+    typedef struct {
         int work_flag;
         Display *lclDisplay, *recDisplay;
         XRecordContext context;
