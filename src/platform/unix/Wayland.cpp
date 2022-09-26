@@ -81,7 +81,7 @@ namespace platform {
 /*********************[  class wayland_windowing : control_impl {  ]**********************/
     wayland_windowing::~wayland_windowing() {}
 
-    int wayland_windowing::init() {
+    void wayland_windowing::init() {
         throw excepts::error("This build completed without Wayland support");
     }
 
