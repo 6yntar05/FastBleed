@@ -6,6 +6,13 @@
 #ifdef USE_X11
     #include <X11/Xlib.h>
     #include <X11/extensions/XTest.h>
+    #include <X11/extensions/record.h>
+
+    typedef struct {
+        Display *lclDisplay, *recDisplay;
+        XRecordContext context;
+        s_event_decl events_decl;
+    } s_XHeap;
 #endif
 
 #ifdef USE_WAYLAND
@@ -33,12 +40,14 @@ private:
         Display *recDisplay;
         int lclScreen;
         Window rootWindow;
+
+        static void eventCallback(XPointer xheap, XRecordInterceptData *data);
     #endif
 public:
     ~x11_windowing();
     void init();
-    void action_button(int keysym, bool pressing);
     void handle_events(s_event_decl *events_decl);
+    void action_button(int keysym, bool pressing);
 };
 
 class wayland_windowing : public control_impl {

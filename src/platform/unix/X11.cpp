@@ -22,73 +22,50 @@ namespace platform {
 
 #ifdef USE_X11
 
-    typedef struct {
-        int work_flag;
-        Display *lclDisplay, *recDisplay;
-        XRecordContext context;
-        s_event_decl events_decl;
-    } s_XHeap;
+    void x11_windowing::eventCallback(XPointer xheap, XRecordInterceptData *xdata) {
+        s_XHeap *heap = reinterpret_cast<s_XHeap*>(xheap);
 
-    void eventCallback(XPointer xheap, XRecordInterceptData *data) {
-        s_XHeap *heap=(s_XHeap *) xheap;
-        unsigned int type, button;
-        s_event_decl *events = &heap->events_decl;
-
-        if (data->category != XRecordFromServer || heap->work_flag == 0) {
-            XRecordFreeData(data);
+        if (xdata->category != XRecordFromServer) {
+            XRecordFreeData(xdata);
             return;
         }
-        type=(static_cast<unsigned char *>(data->data))[0];
-        button=(static_cast<unsigned char *>(data->data))[1];
 
-        switch (type) {
-            case ButtonPress:
-                for (unsigned int i=0; i<events->count; i++) {
-                    if (button == events->ev_button[i]) {
-                        events->flag[i] = true;
-                    }
+        unsigned int type   = (static_cast<unsigned char *>(xdata->data))[0];
+        unsigned int button = (static_cast<unsigned char *>(xdata->data))[1];
+        
+        if ((type != MotionNotify) && // discard at once
+            ((type == ButtonPress) || (type == ButtonRelease) || (type == KeyPress) || (type == KeyRelease)))
+        {  
+            for (unsigned int i = 0; i < heap -> events_decl.count; i++) {
+                if (button == heap -> events_decl.ev_button[i]) {
+                    heap -> events_decl.flag[i] = (type==ButtonPress)||(type==KeyPress) ? true : false;
                 }
-                break;
-
-            case ButtonRelease:
-                for (unsigned int i=0; i<events->count; i++) {
-                    if (button == events->ev_button[i]) {
-                        events->flag[i] = false;
-                    }
-                }
-                break;
-            
-            default:
-                break;
+            }
         }
-        XRecordFreeData(data);
+
+        XRecordFreeData(xdata);
     }
 
 /*********************[  class x11_windowing : control_impl {  ]**********************/
     x11_windowing::~x11_windowing() {
-        if (x11_windowing::lclDisplay) {
-            // XCloseDisplay(x11_windowing::lclDisplay); // Double free (?)
-            // XCloseDisplay(x11_windowing::recDisplay);
+        if (this->lclDisplay) {
+            XCloseDisplay(this->lclDisplay);
+            XCloseDisplay(this->recDisplay);
         }
     }
 
     void x11_windowing::init() {
-        x11_windowing::lclDisplay = XOpenDisplay(0); //Take out!
-        x11_windowing::recDisplay = XOpenDisplay(0);
-        if ((x11_windowing::lclDisplay == NULL)||(x11_windowing::recDisplay == NULL)) {
-            throw excepts::error("Display is null", "Xorg.cpp");
-        };
-        int unnecessary;
-        if (!XRecordQueryVersion(recDisplay, &unnecessary, &unnecessary)) {
-            throw excepts::error("XRecord extension is not found!", "Xorg.cpp");
-        }
-        x11_windowing::lclScreen = DefaultScreen(x11_windowing::lclDisplay);
-        x11_windowing::rootWindow = RootWindow(x11_windowing::lclDisplay, x11_windowing::lclScreen);
-    }
+        this->lclDisplay = XOpenDisplay(0); //Take out!
+        this->recDisplay = XOpenDisplay(0);
 
-    void x11_windowing::action_button(int keysym, bool pressing) {
-        XTestFakeButtonEvent(x11_windowing::lclDisplay, keysym, pressing, CurrentTime);
-        XFlush(x11_windowing::lclDisplay);
+        if ((this->lclDisplay == NULL)||(this->recDisplay == NULL))
+            throw excepts::error("Display is null", "Xorg.cpp");
+
+        if (int ver; !XRecordQueryVersion(recDisplay, &ver, &ver))
+            throw excepts::error("XRecord extension is not found!", "Xorg.cpp");
+
+        this->lclScreen = DefaultScreen(this->lclDisplay);
+        this->rootWindow = RootWindow(this->lclDisplay, this->lclScreen);
     }
 
     void x11_windowing::handle_events(struct s_event_decl *events_decl) {
@@ -98,29 +75,25 @@ namespace platform {
         s_XHeap xheap;
 
         allocRange = XRecordAllocRange();
-        if (!allocRange) {
+        if (!allocRange)
             throw excepts::error("Failed to call XRecordAllocRange()", "Xorg.cpp");
-        }
 
-        allocRange->device_events.first=KeyPress;
-        allocRange->device_events.last=MotionNotify;
-        clientSpec=XRecordAllClients;
-        context=XRecordCreateContext(x11_windowing::recDisplay, 0, &clientSpec, 1, &allocRange, 1);
-        if (!context) {
+        allocRange->device_events.first = KeyPress;
+        allocRange->device_events.last = MotionNotify;
+        clientSpec = XRecordAllClients;
+        context = XRecordCreateContext(this->recDisplay, 0, &clientSpec, 1, &allocRange, 1);
+        if (!context)
             throw excepts::error("Failed to get XRecord context", "Xorg.cpp");
-        }
 
-        xheap.work_flag      = true;
-        xheap.lclDisplay     = x11_windowing::lclDisplay;
-        xheap.recDisplay     = x11_windowing::recDisplay;
+        xheap.lclDisplay     = this->lclDisplay;
+        xheap.recDisplay     = this->recDisplay;
         xheap.context        = context;
         xheap.events_decl    = *events_decl;
         
-        if (!XRecordEnableContextAsync(recDisplay, context, eventCallback, (XPointer)&xheap)) {
+        if (!XRecordEnableContextAsync(recDisplay, context, this->eventCallback, reinterpret_cast<XPointer>(&xheap)))
             throw excepts::error("Failed to start async eventCallback()", "Xorg.cpp");
-        }
 
-        while (xheap.work_flag) {
+        while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(c_actions_cooldown));
             XRecordProcessReplies(recDisplay);
         }
@@ -128,6 +101,11 @@ namespace platform {
         XRecordDisableContext(lclDisplay, context);
         XRecordFreeContext(lclDisplay, context);
         XFree(allocRange);
+    }
+
+    void x11_windowing::action_button(int keysym, bool pressing) {
+        XTestFakeButtonEvent(this->lclDisplay, keysym, pressing, CurrentTime);
+        XFlush(this->lclDisplay);
     }
 /*********************[ }; //class x11_windowing : control_impl ]*********************/
 

@@ -3,12 +3,12 @@
 		{
 			"trigger": 9,
 			"actions": ["CLICKER", "DELAY"],
-			"act_params": [1, 1000]
+			"act_params": [1, 0]
 		},
 		{
 			"trigger": 8,
 			"actions": ["CLICKER", "DELAY"],
-			"act_params": [3, 1000]
+			"act_params": [3, 0]
 		}
 	]
 }
