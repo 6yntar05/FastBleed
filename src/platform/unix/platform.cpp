@@ -20,12 +20,13 @@ std::shared_ptr<control_impl> user_windowing::make_api(e_windowings picked_api) 
         default:
             class none_windowing : public control_impl{
             public:
-                ~none_windowing()                                   {}
-                void init()                                          override {
+                ~none_windowing() {}
+                void init() override {
                     throw excepts::error("Unix platform chooser returns empty implementations", "platform.cpp", "", "Is Xorg or Wayland running?");
                 }
-                void action_button(int keysym, bool pressing)       override {}
-                void handle_events(s_event_decl *events_decl)       override {}
+                void handle_events(s_event_decl *events_decl) override {}
+                void action_button(int keysym, bool pressing) override {}
+                void exec(std::string command) override {}
             };
             return std::make_shared<none_windowing>();
     };

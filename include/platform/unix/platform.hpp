@@ -29,8 +29,10 @@ class control_impl {
 public:
     virtual ~control_impl()                                 = default;
     virtual void init()                                     = 0;
-    virtual void action_button(int keysym, bool pressing)   = 0;
     virtual void handle_events(s_event_decl *events_decl)   = 0;
+    // Actions
+    virtual void action_button(int keysym, bool pressing)   = 0;
+    virtual void exec(std::string command)                  = 0;
 };
 
 class x11_windowing : public control_impl {
@@ -40,7 +42,6 @@ private:
         Display *recDisplay;
         int lclScreen;
         Window rootWindow;
-
         static void eventCallback(XPointer xheap, XRecordInterceptData *data);
     #endif
 public:
@@ -48,6 +49,7 @@ public:
     void init();
     void handle_events(s_event_decl *events_decl);
     void action_button(int keysym, bool pressing);
+    void exec(std::string command);
 };
 
 class wayland_windowing : public control_impl {
@@ -70,8 +72,9 @@ private:
 public:
     ~wayland_windowing();
     void init();
-    void action_button(int keysym, bool pressing);
     void handle_events(s_event_decl *events_decl);
+    void action_button(int keysym, bool pressing);
+    void exec(std::string command);
 };
 
 class user_windowing {

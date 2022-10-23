@@ -5,35 +5,62 @@ project(            FastBleed
     LANGUAGES       CXX
 )
 
-### OPTIONS ###
-option(USE_GUI "Build with Qt GUI support" OFF)
-option(USE_BOOST "Use BOOST:program_options" ON)
-
 ### COMPILE PROPERTIES ###
+#set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTORCC ON)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+### OPTIONS ###
+option(USE_SAN "Compile with sanitizers (Only debug version)" OFF)
+option(USE_GUI "Build with Qt GUI support" OFF)
+option(USE_BOOST "Use BOOST:program_options" ON)
+
+function (no_msvc)
+    if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
+        add_compile_options(-O0 -g)
+        if (BE_BUILD_SAN)
+            add_compile_options(-fsanitize=undefined -fsanitize=address)
+            add_link_options(-fsanitize=undefined -fsanitize=address)
+        endif ()
+    else ()
+        add_compile_options(-O3)
+    endif ()
+endfunction()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fdiagnostics-color=always)
-
-    if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
-        add_compile_options(-O0 -g -fsanitize=undefined -fsanitize=address)
-        add_link_options(-fsanitize=undefined -fsanitize=address)
-    else ()
-        add_compile_options(-O3)
-    endif ()
-
+    no_msvc()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fcolor-diagnostics)
-
-    if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
-        add_compile_options(-O0 -g -fsanitize=undefined -fsanitize=address)
-        add_link_options(-fsanitize=undefined -fsanitize=address)
-    else ()
-        add_compile_options(-O3)
-    endif ()
-
+    no_msvc()
 endif ()
+
+### SUBMODULES ###
+function (submodules_update)
+    find_package(Git QUIET)
+    if (GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+        option(GIT_SUBMODULE "Check submodules during build" ON)
+        if (GIT_SUBMODULE)
+            message (">> Update submodules")
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                RESULT_VARIABLE GIT_SUBMOD_RESULT
+            )
+            if (NOT GIT_SUBMOD_RESULT EQUAL "0")
+                message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+            endif ()
+        endif ()
+    endif ()
+endfunction ()
+
+### Finding QT ###
+message         (">> Finding Qt")
+find_package    (QT NAMES Qt5 Qt6 QUIET COMPONENTS Widgets)
+find_package    (Qt${QT_VERSION_MAJOR} QUIET COMPONENTS Widgets)
 
 ### SRC FILES ###
 file(GLOB SRCFILES "./src/*.cpp")                                               # In main dir
@@ -47,32 +74,21 @@ elseif (APPLE)
 endif()
 
 include_directories(AFTER SYSTEM ./include)
-add_executable(${PROJECT_NAME} ${SRCFILES})
+
+if (QT_FOUND)
+    add_compile_definitions (USE_GUI)
+    if (QT_VERSION_MAJOR GREATER_EQUAL 6)
+        qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${SRCFILES})
+        qt_finalize_executable(${PROJECT_NAME})
+    else ()
+        add_executable(${PROJECT_NAME} ${SRCFILES})
+    endif ()
+    target_link_libraries   (${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
+else ()
+    message                 (FATAL_ERROR "QT Not found! Install QT and add it to PATH")
+endif ()
+
 target_include_directories(${PROJECT_NAME} PRIVATE ./include)
-
-### SUBMODULES ###
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message (">> Update submodules")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
-endif()
-
-### SIMDJSON ###
-add_subdirectory        (./libs/simdjson)
-find_library            (simdjson HINTS "libs/simdjson/include")
-include_directories     (${PROJECT_SOURCE_DIR}/libs/simdjson)
-include_directories     (${PROJECT_SOURCE_DIR}/libs/simdjson/include)
-link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson)
-link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson/src)
-target_link_libraries   (${PROJECT_NAME} simdjson)
 
 ### BOOST ###
 message (">> Finding Boost")
@@ -89,18 +105,14 @@ if (USE_BOOST)
     endif ()
 endif ()
 
-### QT GUI ###
-message (">> Finding Qt")
-find_package(QT NAMES Qt6 Qt5 QUIET COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} QUIET COMPONENTS Widgets)
-if (USE_GUI)
-    if (QT_FOUND)
-        add_compile_definitions (USE_GUI)
-        target_link_libraries   (${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
-    else ()
-        message(WARNING "QT Not found! Skipping")
-    endif ()
-endif ()
+### SIMDJSON ###
+add_subdirectory        (./libs/simdjson)
+find_library            (simdjson HINTS "libs/simdjson/include")
+include_directories     (${PROJECT_SOURCE_DIR}/libs/simdjson)
+include_directories     (${PROJECT_SOURCE_DIR}/libs/simdjson/include)
+link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson)
+link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson/src)
+target_link_libraries   (${PROJECT_NAME} simdjson)
 
 ### PLATFORM-SPECIFIC BLOCK ###
 message (">> >> Platform-specific configuration")

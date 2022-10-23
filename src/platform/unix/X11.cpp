@@ -30,9 +30,9 @@ namespace platform {
             return;
         }
 
-        unsigned int type   = (static_cast<unsigned char *>(xdata->data))[0];
-        unsigned int button = (static_cast<unsigned char *>(xdata->data))[1];
-        
+        unsigned int type   = static_cast<unsigned char *>(xdata->data)[0];
+        unsigned int button = static_cast<unsigned char *>(xdata->data)[1];
+
         if ((type != MotionNotify) && // discard at once
             ((type == ButtonPress) || (type == ButtonRelease) || (type == KeyPress) || (type == KeyRelease)))
         {  
@@ -58,7 +58,7 @@ namespace platform {
         this->lclDisplay = XOpenDisplay(0); //Take out!
         this->recDisplay = XOpenDisplay(0);
 
-        if ((this->lclDisplay == NULL)||(this->recDisplay == NULL))
+        if ((this->lclDisplay == NULL) || (this->recDisplay == NULL))
             throw excepts::error("Display is null", "Xorg.cpp");
 
         if (int ver; !XRecordQueryVersion(recDisplay, &ver, &ver))
@@ -107,6 +107,11 @@ namespace platform {
         XTestFakeButtonEvent(this->lclDisplay, keysym, pressing, CurrentTime);
         XFlush(this->lclDisplay);
     }
+
+    void x11_windowing::exec(std::string command) {
+        system(command.c_str());
+    }
+
 /*********************[ }; //class x11_windowing : control_impl ]*********************/
 
 #else /* If this build completed whithout X11 support */
