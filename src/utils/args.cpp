@@ -1,5 +1,6 @@
 #include "utils/args.hpp"
-// #include <iostream>
+#include <iostream>
+#include <typeinfo>
 
 namespace utils {
 
@@ -14,9 +15,8 @@ namespace program_options {
 option::option(const char name_short, const std::string description) :
     name_short(name_short), description(description) {}
 
-template<typename T>
-option::option(const char name_short, typed_value<T> *value, const std::string description) :
-    name_short(name_short), description(description) {}
+option::option(const char name_short, untyped_value *value, const std::string description) :
+    name_short(name_short), value(value), description(description) {}
 
 char option::get_name_short() const {
     return this->name_short;
@@ -26,24 +26,23 @@ std::string option::get_description() const {
     return this->description;
 }
 
+untyped_value *option::get_value() {
+    return this->value;
+}
+
+void option::set_value(untyped_value *value) {
+    this->value = value;
+}
+
 options_map::options_map() {}
 
 option_init::option_init(option_description *owner) : owner(owner) {}
 
 option_init &option_init::operator()(const std::string name, const std::string description) {
-    owner->add(name, description);
-
-    int end = name.size() - 2;
-
-    if (end > owner->option_name_lenght) {
-        owner->option_name_lenght = end;
-    }
-
-    return *this;
+    return this->operator()(name, nullptr, description);
 }
 
-template<typename T>
-option_init &option_init::operator()(const std::string name, typed_value<T> *value, const std::string description) {
+option_init &option_init::operator()(const std::string name, untyped_value *value, const std::string description) {
     owner->add(name, value, description);
 
     int end = name.size() - 2;
@@ -63,14 +62,10 @@ option_init option_description::add_options() {
 }
 
 void option_description::add(const std::string name, const std::string description) {
-    this->options.insert({
-        name.substr(0, name.length() - 2),
-        option(name[name.length() - 1], description)
-    });
+    this->add(name, nullptr, description);
 }
 
-template<typename T>
-void option_description::add(const std::string name, typed_value<T> *value, const std::string description) {
+void option_description::add(const std::string name, untyped_value *value, const std::string description) {
     this->options.insert({
         name.substr(0, name.length() - 2),
         option(name[name.length() - 1], value, description)
@@ -112,6 +107,10 @@ parse_command_line(const int argc, char *argv[], option_description &od) {
                 is_found = false;
                 for (auto option: od.get_options()) {
                     if (option.second.get_name_short() == argv[i][j - 1]) {
+                        if (option.second.get_value() != nullptr) {
+                            *option.second.get_value()->value->u_value = argv[++i]; // не работает как надо
+                            std::cout << (option.second.get_value()->value->u_value) << std::endl; // не работает как надо
+                        }
                         out.insert({option.first, option.second});
                         is_found = true;
                         break;
@@ -119,6 +118,7 @@ parse_command_line(const int argc, char *argv[], option_description &od) {
                 }
                 if (!is_found) {
                     out.insert({"error", option('\0', "error")});
+                    break;
                 }
             }
         }
