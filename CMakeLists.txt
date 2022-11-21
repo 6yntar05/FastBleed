@@ -7,7 +7,7 @@ project(            FastBleed
 
 ### OPTIONS ###
 option(USE_GUI "Build with Qt GUI support" OFF)
-option(USE_BOOST "Use BOOST:program_options" ON)
+option(USE_BOOST "Use BOOST:program_options" OFF)
 
 ### COMPILE PROPERTIES ###
 set(CMAKE_CXX_STANDARD 17)
@@ -80,7 +80,7 @@ if (UNIX)
         add_compile_definitions (USE_COLORS)
     endif ()
 
-    option(USE_X11 "Include X11 libraries and compile X11 implementation" ON)
+    option(USE_X11 "Include X11 libraries and compile X11 implementation" OFF)
     if (USE_X11)
         add_compile_definitions (USE_X11)
         find_package            (X11 REQUIRED COMPONENTS Xtst)
