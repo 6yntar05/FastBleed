@@ -36,10 +36,11 @@ option_init::option_init(option_description *owner) : owner(owner) {}
 option_init &option_init::operator()(const std::string name, const std::string description, const bool value) {
     owner->add(name, description, value);
 
-    int end = name.size() - 2;
+    int end = name.length();
 
-    if (end > owner->option_name_lenght) {
-        owner->option_name_lenght = end;
+    if (end > owner->option_name_length) {
+        owner->option_name_length = end;
+        std::cout << end << std::endl;
     }
 
     return *this;
@@ -72,8 +73,9 @@ std::ostream &operator<<(std::ostream &os, const option_description &od) {
         else
             s_options += " ]    ";
         
-        for (int j = option.get_name_long().length(); j < od.option_name_lenght + 2; j++) {
-            s_options += ' ';
+        std::cout << od.option_name_length << std::endl;
+        for (int j = option.get_name_long().length(); j < od.option_name_length + 2; j++) {
+            // s_options += ' ';
         }
         
         s_options += "   " + option.get_description() + '\n';
@@ -91,6 +93,28 @@ parse_command_line(const int argc, char *argv[], option_description &od) {
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
+            if (argv[i][1] == '-') {
+                is_found = false;
+                std::string name = argv[i];
+                name = name.substr(2, name.length());
+                for (auto option : od.get_options()) {
+                    if (option.get_name_long() == name) {
+                        if (option.get_value() != "\0") {
+                            if (argv[i + 1] == NULL || argv[i + 1][0] == '-') break;
+                            option.set_value(argv[i + 1]);
+                            i++;
+                        }
+                        out.insert({option.get_name_long(), option});
+                        is_found = true;
+                        break;
+                    }
+                }
+                if (!is_found) {   
+                    out.insert({"error", option('\0', "error", "error")});
+                    continue;
+                }
+                continue;
+            }
             int j = 1;
             is_value = false;
             while (argv[i][j++] != '\0') {
@@ -100,7 +124,7 @@ parse_command_line(const int argc, char *argv[], option_description &od) {
                     if (option.get_name_short() == argv[i][j - 1]) {
                         if (option.get_value() != "\0") {
                             is_value = true;
-                            if (argv[i + 1] == NULL || argv[i][j] != '\0') break;
+                            if (argv[i + 1] == NULL || argv[i + 1][0] == '-' || argv[i][j] != '\0') break;
                             option.set_value(argv[i + 1]);
                             i++;
                         }

@@ -13,7 +13,7 @@ void parse_args(const int argc, char *argv[]) {
         ("help,h", "Help page")
         ("gui,g", "Use graphic interface")
         ("verbose,v", "Be verbose")
-        ("config,p", "Path to config file", true)
+        ("config,c", "Path to config file", true)
         #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
             ("xorg,x", "Override Xorg")
             ("wayland,w", "Override Wayland")
