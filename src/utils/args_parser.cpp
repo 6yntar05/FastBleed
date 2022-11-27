@@ -13,7 +13,7 @@ void parse_args(const int argc, char *argv[]) {
         ("help,h", "Help page")
         ("gui,g", "Use graphic interface")
         ("verbose,v", "Be verbose")
-        ("config,p", po::value<std::string>(&config_path), "Path to config file")
+        ("config,p", "Path to config file")
         #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
             ("xorg,x", "Override Xorg")
             ("wayland,w", "Override Wayland")
@@ -31,6 +31,10 @@ void parse_args(const int argc, char *argv[]) {
     if (args.count("gui")) {
         std::cout << "gui" << std::endl;
         // exit(0);
+    }
+    if (args.count("config")) {
+        // config_path = args["config"].get_value();
+        std::cout << config_path << std::endl;
     }
     if (args.count("help")) {
         std::cout << desc << std::endl;
