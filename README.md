@@ -25,7 +25,7 @@ cmake --build ./ -j$(nproc)
 ### CMake options
 - -DUSE_X11=ON/OFF              # Include X11 libraries and compile X11 implementation
 - -DUSE_WAYLAND=ON/OFF          # Include Wayland libraries and compile Wayland implementation
-- -DUSE_BOOST=OF/OFF            # For systems without c++ boost
+- -DUSE_BOOST=ON/OFF            # For systems without c++ boost
 - -DUSE_COLORS=ON/OFF           # Use colorful output
 - -DUSE_GUI=ON/OFF              # Qt GUI
 

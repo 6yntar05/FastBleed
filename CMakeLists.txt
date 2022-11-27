@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ### OPTIONS ###
 option(USE_SAN "Compile with sanitizers (Only debug version)" OFF)
 option(USE_GUI "Build with Qt GUI support" OFF)
-option(USE_BOOST "Use BOOST:program_options" ON)
+option(USE_BOOST "Use BOOST:program_options" OFF)
 
 function (no_msvc)
     if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
