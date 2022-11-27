@@ -20,12 +20,13 @@ std::shared_ptr<control_impl> user_windowing::make_api(e_windowings picked_api) 
         default:
             class none_windowing : public control_impl{
             public:
-                ~none_windowing()                                   {}
-                void init()                                          override {
-                    throw excepts::error("Unix platform chooser returns emply implementations", "platform.cpp");
+                ~none_windowing() {}
+                void init() override {
+                    throw excepts::error("Unix platform chooser returns empty implementations", "platform.cpp", "", "Is Xorg or Wayland running?");
                 }
-                void action_button(int keysym, bool pressing)       override {}
-                void handle_events(s_event_decl *events_decl)       override {}
+                void handle_events(s_event_decl *events_decl) override {}
+                void action_button(int keysym, bool pressing) override {}
+                void exec(std::string command) override {}
             };
             return std::make_shared<none_windowing>();
     };
@@ -45,7 +46,7 @@ std::shared_ptr<control_impl> get_platform() {
     } else if (std::getenv("DISPLAY") || override_xorg) {
         return windowing.make_api(X11);
     } else {
-        return windowing.make_api(Placeholder);
+        return windowing.make_api();
     }
 }
 

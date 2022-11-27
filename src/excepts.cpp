@@ -14,11 +14,11 @@ error::error(const string msg, const string file, const string func, const strin
     ui::error(msg);
 
     // Construct what()
-    this->what_string = "excepts::error";
+    this->what_string = "excepts::error\n";
 
-    if (!this->file.empty()) this->what_string.append("\n\t| In file: "+file+" |\n");
-    if (!this->func.empty()) this->what_string.append("\n\t| In function: "+func+" |\n");
-    if (!this->info.empty()) this->what_string.append("\n\t| "+info+" |\n");
+    if (!this->file.empty()) this->what_string.append("\t| In file: "+file+" |\n");
+    if (!this->func.empty()) this->what_string.append("\t| In function: "+func+" |\n");
+    if (!this->info.empty()) this->what_string.append("\t| "+info+" |\n");
 
     this->what_msg = this->what_string.data();
 }

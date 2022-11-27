@@ -1,8 +1,7 @@
 #include <thread>
 #include <chrono>
 #include <random>
-#include <string>
-#include <iostream>
+#include <csignal>
 #include <functional>
 
 #include "utils/config.hpp"                                     // Config <-> FastBleed layer
@@ -19,12 +18,14 @@ float relation                  = c_relation;
 unsigned int entropy_variation  = c_entropy_variation;
 unsigned int actions_cooldown   = c_actions_cooldown;
 std::string config_path         = c_config_path;
-bool use_gui                    = c_use_gui;
 
-bool override_wayland = false;
-bool override_xorg = false;
-bool be_verbose = false;
+// Runtime flags
+bool use_gui            = c_use_gui;
+bool override_wayland   = false;
+bool override_xorg      = false;
+bool be_verbose         = false;
 
+void signal_handler(int signum);
 void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_timings timings, s_event_decl *actions);
 
 int main(int argc, char* argv[]) {
@@ -42,26 +43,33 @@ int main(int argc, char* argv[]) {
     
     // Read config -> declare events
     s_event_decl events_decl = config.parse();
-    std::vector<e_actions> vec_action_script;
-    std::vector<unsigned int> vec_action_params;
 
     // Start actions handler thread
     std::thread actions_thread(handle_actions, control, timings, &events_decl);
     actions_thread.detach();
 
     // Call events handler
+    signal(SIGINT, signal_handler);
     ui::info("Starting action handler");
     control->handle_events(&events_decl);
     
     return 0;
 }
 
+void signal_handler(int signum) {
+   std::cout << "Interrupt signal (" << signum << ") received.\n";
+   exit(signum);
+}
+
 void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_timings timings, s_event_decl *actions) {
     bool cooldown = false; // If nothing needs to be done
 
     std::random_device rd; std::mt19937 gen_seed(rd());
-    std::uniform_int_distribution<> entropy(-timings.entropy_variation, timings.entropy_variation);
-    // ^ Introduces randomness in the timings of pressing. Makes clicks more natural. ^
+    std::uniform_int_distribution<> entropy(
+       -static_cast<int>(timings.entropy_variation),
+        static_cast<int>(timings.entropy_variation)
+    );
+    // ^ Introduces randomness in the timings of pressing. Make clicks more natural. ^
 
     while (true) {
         for (unsigned int i = 0; i < actions->count; i++) {

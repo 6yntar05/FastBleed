@@ -64,16 +64,21 @@ namespace platform {
         wl_registry_destroy(this->registry);
     }
 
+    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+        //display = wl_display_connect(NULL);
+        throw excepts::error("Not implemented", "Wayland.cpp");
+    }
+
     void wayland_windowing::action_button(int keysym, bool pressing) {
         //display = wl_display_connect(NULL);
         std::cerr << "Not implemented for now!\n";
         throw excepts::error("Not implemented", "Wayland.cpp");
     }
 
-    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
-        //display = wl_display_connect(NULL);
-        throw excepts::error("Not implemented", "Wayland.cpp");
+    void wayland_windowing::exec(std::string command) {
+        system(command.c_str());
     }
+
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/
 
 #else /* If this build completed whithout Wayland support */
