@@ -130,6 +130,10 @@ namespace platform {
     void x11_windowing::handle_events(struct s_event_decl *events_decl) {
         throw excepts::error("This build completed without X11 support");
     }
+
+    void x11_windowing::exec(std::string command) {
+        system(command.c_str());
+    }
 /*********************[ }; //class x11_windowing : control_impl ]*********************/
 
 #endif
