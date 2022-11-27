@@ -7,7 +7,7 @@ namespace utils {
 namespace program_options {
 
 option::option(const char name_short, const std::string name_long, const std::string description, const bool value) :
-    name_short(name_short), name_long(name_long), description(description), value(value ? "1" : "\0") {}
+    name_short(name_short), name_long(name_long), description(description), value(value ? "0" : "\0") {}
 
 char option::get_name_short() const {
     return this->name_short;
@@ -66,13 +66,17 @@ std::ostream &operator<<(std::ostream &os, const option_description &od) {
     for (auto option : od.options) {
         s_options += "  -";
         s_options += option.get_name_short();
-        s_options += " [ --" + option.get_name_long() + " ]";
+        s_options += " [ --" + option.get_name_long();
+        if (option.get_value() == "0")
+            s_options += " arg ]";
+        else
+            s_options += " ]    ";
         
-        for (int j = option.get_name_long().length(); j < od.option_name_lenght; j++) {
+        for (int j = option.get_name_long().length(); j < od.option_name_lenght + 2; j++) {
             s_options += ' ';
         }
         
-        s_options += '\t' + option.get_description() + '\n';
+        s_options += "   " + option.get_description() + '\n';
     }
     s_options.pop_back();
 

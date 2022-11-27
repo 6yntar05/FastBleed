@@ -20,7 +20,6 @@ void parse_args(const int argc, char *argv[]) {
         #endif
     ;
 
-    std::cout << config_path << std::endl;
     po::options_map args;
     po::store(po::parse_command_line(argc, argv, desc), args);
 
