@@ -50,8 +50,7 @@ private:
     std::string value = "0";
 
 public:
-    option(const char name_short, const std::string name_long, const std::string description);
-    // option(const char name_short, const std::string name_long, untyped_value *value, const std::string description);
+    option(const char name_short, const std::string name_long, const std::string description, const bool value = false);
 
     char get_name_short() const;
     std::string get_name_long() const;
@@ -77,8 +76,7 @@ private:
 public:
     option_init(option_description *owner);
 
-    option_init &operator()(const std::string name, const std::string description);
-    // option_init &operator()(const std::string name, untyped_value *value, const std::string description);
+    option_init &operator()(const std::string name, const std::string description, const bool value = false);
 };
 
 class option_description {
@@ -94,8 +92,7 @@ public:
 
     option_init add_options();
 
-    void add(const std::string name, const std::string description);
-    // void add(const std::string name, untyped_value *value, const std::string description);
+    void add(const std::string name, const std::string description, const bool value = false);
     
     std::vector<option> get_options() const;
 

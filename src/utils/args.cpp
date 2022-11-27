@@ -6,17 +6,8 @@ namespace utils {
 
 namespace program_options {
 
-// template<typename T>
-// value<T>::value() {}
-
-// template<typename T>
-// value<T>::value(const T &value) : _value(value) {}
-
-option::option(const char name_short, const std::string name_long, const std::string description) :
-    name_short(name_short), description(description) {}
-
-// option::option(const char name_short, const std::string name_long, untyped_value *value, const std::string description) :
-//     name_short(name_short), value(value), description(description) {}
+option::option(const char name_short, const std::string name_long, const std::string description, const bool value) :
+    name_short(name_short), name_long(name_long), description(description), value(value ? "1" : "\0") {}
 
 char option::get_name_short() const {
     return this->name_short;
@@ -42,12 +33,8 @@ options_map::options_map() {}
 
 option_init::option_init(option_description *owner) : owner(owner) {}
 
-// option_init &option_init::operator()(const std::string name, const std::string description) {
-//     return this->operator()(name, nullptr, description);
-// }
-
-option_init &option_init::operator()(const std::string name, const std::string description) {
-    owner->add(name, description);
+option_init &option_init::operator()(const std::string name, const std::string description, const bool value) {
+    owner->add(name, description, value);
 
     int end = name.size() - 2;
 
@@ -65,13 +52,9 @@ option_init option_description::add_options() {
     return option_init(this);
 }
 
-void option_description::add(const std::string name, const std::string description) {
-    this->options.push_back(option(name[name.length() - 1], name.substr(0, name.length() - 2), description));
+void option_description::add(const std::string name, const std::string description, const bool value) {
+    this->options.push_back(option(name[name.length() - 1], name.substr(0, name.length() - 2), description, value));
 }
-
-// void option_description::add(const std::string name, untyped_value *value, const std::string description) {
-//     this->options.push_back(option(name[name.length() - 1], name.substr(0, name.length() - 2), value, description));
-// }
 
 std::vector<option> option_description::get_options() const {
     return this->options;
@@ -100,20 +83,22 @@ options_map
 parse_command_line(const int argc, char *argv[], option_description &od) {
     options_map out;
     bool is_found = false;
+    bool is_value = false;
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             int j = 1;
-            while (argv[i][j++] != 0) {
+            is_value = false;
+            while (argv[i][j++] != '\0') {
+                if (is_value) break;
                 is_found = false;
                 for (auto option : od.get_options()) {
                     if (option.get_name_short() == argv[i][j - 1]) {
-                        if (option.get_value() != "0") {
-                            // option.set_value(argv[++i]);
-                            // std::cout << option.get_value()->v->value << std::endl;
-                            // *option.second.get_value()->v->value = argv[++i];
-                            // option.second.get_value()->value = argv[++i];
-                            // std::cout << (option.second.get_value()->value->u_value) << std::endl;
+                        if (option.get_value() != "\0") {
+                            is_value = true;
+                            if (argv[i + 1] == NULL || argv[i][j] != '\0') break;
+                            option.set_value(argv[i + 1]);
+                            i++;
                         }
                         out.insert({option.get_name_long(), option});
                         is_found = true;
