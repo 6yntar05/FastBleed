@@ -40,7 +40,6 @@ option_init &option_init::operator()(const std::string name, const std::string d
 
     if (end > owner->option_name_length) {
         owner->option_name_length = end;
-        std::cout << end << std::endl;
     }
 
     return *this;
@@ -73,9 +72,8 @@ std::ostream &operator<<(std::ostream &os, const option_description &od) {
         else
             s_options += " ]    ";
         
-        std::cout << od.option_name_length << std::endl;
-        for (int j = option.get_name_long().length(); j < od.option_name_length + 2; j++) {
-            // s_options += ' ';
+        for (int j = option.get_name_long().length(); j < od.option_name_length; j++) {
+            s_options += ' ';
         }
         
         s_options += "   " + option.get_description() + '\n';
