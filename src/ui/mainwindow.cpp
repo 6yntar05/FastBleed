@@ -1,7 +1,7 @@
-#include "mainwindow.h"
-#include "./ui_mainwindow.h"
-#include "action.h"
-#include "trigger.h"
+#include "ui/mainwindow.h"
+#include "ui_mainwindow.h"
+#include "ui/action.h"
+#include "ui/trigger.h"
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)

@@ -6,22 +6,21 @@ project(            FastBleed
 )
 
 ### COMPILE PROPERTIES ###
-#set(CMAKE_AUTOUIC ON)
-#set(CMAKE_AUTOMOC ON)
-#set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC OFF)
+set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### OPTIONS ###
 option(USE_SAN "Compile with sanitizers (Only debug version)" OFF)
-option(USE_GUI "Build with Qt GUI support" OFF)
-option(USE_BOOST "Use BOOST:program_options" OFF)
+option(USE_GUI "Build with Qt GUI support" ON)
 
 function (no_msvc)
     if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
         add_compile_options(-O0 -g)
-        if (BE_BUILD_SAN)
+        if (USE_SAN)
             add_compile_options(-fsanitize=undefined -fsanitize=address)
             add_link_options(-fsanitize=undefined -fsanitize=address)
         endif ()

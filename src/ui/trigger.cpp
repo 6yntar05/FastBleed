@@ -1,4 +1,4 @@
-#include "trigger.h"
+#include "ui/trigger.h"
 #include "ui_trigger.h"
 
 trigger::trigger(int index, MainWindow *main_window, QWidget *parent) :
