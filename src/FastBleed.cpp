@@ -1,3 +1,8 @@
+#include "ui/mainwindow.h"
+
+#include <QMainWindow>
+#include <QApplication>
+
 #include <thread>
 #include <chrono>
 #include <random>
@@ -12,8 +17,6 @@
 #include "platform/platform.hpp"                                // platform::init() returns platform-non-specifically abstraction
 #include "runtime.hpp"                                          // Flags, constants and shared points
 
-// #include "ui/mainwindow.h"
-// #include <QApplication> // Temporary
 
 /// Load hardcoded vars
 float cps                       = c_cps;
@@ -33,10 +36,10 @@ void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_ti
 
 int main(int argc, char* argv[]) {
     // Temporary...
-    //QApplication a(argc, argv);
-    //MainWindow w;
-    //w.show();
-    //return a.exec();
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    a.exec();
     // /Temporary...
 
     utils::parse_args(argc, argv);
