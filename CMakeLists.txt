@@ -6,11 +6,13 @@ project(            FastBleed
 )
 
 ### COMPILE PROPERTIES ###
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC OFF)
+set(CMAKE_AUTOMOC ON)   # NOTE: conflict with gui.cpp 
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### OPTIONS ###
@@ -63,7 +65,7 @@ find_package    (Qt${QT_VERSION_MAJOR} QUIET COMPONENTS Widgets)
 
 ### SRC FILES ###
 file(GLOB SRCFILES "./src/*.cpp")                                               # In main dir
-file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/utils/*.cpp" "./src/ui/*.cpp")    # Other dirs
+file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/utils/*.cpp" "./src/ui/*")    # Other dirs
 if (UNIX)                                                                       # Compile-time platform selection
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/unix/*.cpp")
 elseif (WIN32)
@@ -71,6 +73,9 @@ elseif (WIN32)
 elseif (APPLE)
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/apple/*.cpp")
 endif()
+file(GLOB_RECURSE SRCFILES ${SRCFILES} "./include/ui/*.h")
+
+message(${SRCFILES})
 
 include_directories(AFTER SYSTEM ./include)
 
@@ -88,21 +93,6 @@ else ()
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./include)
-
-### BOOST ###
-message (">> Finding Boost")
-find_package (Boost QUIET COMPONENTS program_options)
-if (USE_BOOST)
-    if (Boost_FOUND)
-        add_compile_definitions (USE_BOOST)
-        include_directories     (${Boost_INCLUDE_DIRS})
-        link_directories        (${Boost_LIBRARY_DIRS})
-        add_definitions         (${Boost_DEFINITIONS})
-        target_link_libraries   (${PROJECT_NAME} ${Boost_PROGRAM_OPTIONS_LIBRARY})
-    else ()
-        message (WARNING "BOOST Not found! Skipping")
-    endif ()
-endif ()
 
 ### SIMDJSON ###
 add_subdirectory        (./libs/simdjson)

@@ -12,6 +12,9 @@
 #include "platform/platform.hpp"                                // platform::init() returns platform-non-specifically abstraction
 #include "runtime.hpp"                                          // Flags, constants and shared points
 
+// #include "ui/mainwindow.h"
+// #include <QApplication> // Temporary
+
 /// Load hardcoded vars
 float cps                       = c_cps;
 float relation                  = c_relation;
@@ -29,6 +32,13 @@ void signal_handler(int signum);
 void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_timings timings, s_event_decl *actions);
 
 int main(int argc, char* argv[]) {
+    // Temporary...
+    //QApplication a(argc, argv);
+    //MainWindow w;
+    //w.show();
+    //return a.exec();
+    // /Temporary...
+
     utils::parse_args(argc, argv);
     utils::c_config config {config_path};
 
