@@ -9,39 +9,6 @@ void parse_args(const int argc, char *argv[]);
 
 namespace program_options {
 
-// class untyped_value;
-// template<typename T>
-// class typed_value;
-
-// class untyped_value {
-// public:
-// protected:
-// };
-
-// template<typename T>
-// class typed_value : public untyped_value {
-// public:
-//     T *value;
-
-//     typed_value(T *value) {
-//         this->value = value;
-//     }
-//     ~typed_value() {
-//         delete value;
-//     }
-// };
-
-// template<typename T>
-// typed_value<T> *value() {
-//     return program_options::value<T>(0);
-// }
-
-// template<typename T>
-// typed_value<T> *value(T *v) {
-//     typed_value<T> *r = new typed_value<T>(v);
-//     return r;
-// }
-
 class option {
 private:
     char name_short;
@@ -85,7 +52,7 @@ private:
     std::vector<option> options;
 
 public:
-    int option_name_length;
+    int option_name_length = 0;
     
 public:
     option_description(const std::string &description);

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "utils/args.hpp"
 
 namespace utils {

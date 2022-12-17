@@ -34,21 +34,19 @@ bool be_verbose         = false;
 void signal_handler(int signum);
 void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_timings timings, s_event_decl *actions);
 
+void handler_wrapper(std::shared_ptr<platform::control_impl> control, s_event_decl* arg) { control->handle_events(arg); }
+
 int main(int argc, char* argv[]) {
-    // Temporary...
+    // Gui
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
-    a.exec();
-    // /Temporary...
 
     utils::parse_args(argc, argv);
     utils::c_config config {config_path};
 
     // Pick platform-non-specifically abstraction
     std::shared_ptr<platform::control_impl> control = platform::get_platform();
-
-    // Initialize implementation
     control->init();
 
     // Calculate delays around CPS/Relation value
@@ -63,10 +61,11 @@ int main(int argc, char* argv[]) {
 
     // Call events handler
     signal(SIGINT, signal_handler);
-    ui::info("Starting action handler");
-    control->handle_events(&events_decl);
-    
-    return 0;
+    ui::msg("Starting action handler");
+    std::thread handler_thread(handler_wrapper, control, &events_decl);
+    handler_thread.detach();
+
+    return a.exec();
 }
 
 void signal_handler(int signum) {
@@ -117,7 +116,8 @@ void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_ti
                             break;
                         
                         case ACT_SYS_EXEC:
-                            // Not implemented
+                            // It's also dangerous to use
+                            control->exec("/bin/sh -c 'touch ./test'");
                             break;
                         
                         case ACT_TEXT_TYPE:

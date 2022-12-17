@@ -75,8 +75,6 @@ elseif (APPLE)
 endif()
 file(GLOB_RECURSE SRCFILES ${SRCFILES} "./include/ui/*.h")
 
-message(${SRCFILES})
-
 include_directories(AFTER SYSTEM ./include)
 
 if (QT_FOUND)

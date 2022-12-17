@@ -30,7 +30,17 @@
        <widget class="QComboBox" name="comboBox">
         <item>
          <property name="text">
-          <string>Press</string>
+          <string>Click</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Release</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Clicker</string>
          </property>
         </item>
         <item>
@@ -40,7 +50,17 @@
         </item>
         <item>
          <property name="text">
+          <string>Move</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>System</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Type</string>
          </property>
         </item>
        </widget>

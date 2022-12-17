@@ -2,8 +2,8 @@
 #include "ui/feedback.hpp"
 
 #include "simdjson.h"
+#include "excepts.hpp"
 #include <cstddef>
-#include <excepts.hpp>
 #include <unordered_map>
 #include <cassert>
 #include <cstdint>
@@ -13,23 +13,6 @@
 namespace utils {
 
 using namespace simdjson;
-
-/// Interpret string to enum e_actions
-e_actions c_config::to_action(std::string str) {
-    std::unordered_map<std::string, e_actions> umap;
-    umap["DELAY"] = ACT_DELAY;
-    umap["CLICK"] = ACT_CLICK;
-    umap["RELEASE"] = ACT_RELEASE;
-    umap["MOVE"] = ACT_MOVE;
-    umap["CLICKER"] = ACT_CLICKER;
-    umap["TEXT_TYPE"] = ACT_TEXT_TYPE;
-    umap["SYS_EXEC"] = ACT_SYS_EXEC;
-
-    if (umap.find(str) == umap.end())
-        ui::error("Config syntax error : Invalid action \"" + str + "\"");
-
-    return umap.at(str);
-}
 
 void c_config::allocate(unsigned int count) {
     this->ret.count = count;

@@ -26,7 +26,9 @@ std::shared_ptr<control_impl> user_windowing::make_api(e_windowings picked_api) 
                 }
                 void handle_events(s_event_decl *events_decl) override {}
                 void action_button(int keysym, bool pressing) override {}
-                void exec(std::string command) override {}
+                void exec(std::string command) override {
+                    system(command.c_str());
+                }
             };
             return std::make_shared<none_windowing>();
     };
