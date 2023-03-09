@@ -9,7 +9,7 @@
 namespace utils {
 
 class c_config {
-private:
+  private:
     std::string PATH;
     s_event_decl ret;
     bool allocated = false;
@@ -31,15 +31,10 @@ private:
         return umap.at(str);
     }
 
-public:
-    c_config(std::string PATH);
-    ~c_config();
-
-    void allocate(unsigned int count);
-    void deallocate();
-
+  public:
     s_event_decl parse();
-    void sync();
+    c_config() : c_config("./config.cfg") {};
+    c_config(std::string path);
 };
 
 } // namespace utils

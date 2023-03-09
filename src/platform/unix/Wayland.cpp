@@ -64,7 +64,7 @@ namespace platform {
         wl_registry_destroy(this->registry);
     }
 
-    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+    void wayland_windowing::handle_events(s_event_decl *events_decl) {
         //display = wl_display_connect(NULL);
         throw excepts::error("Not implemented", "Wayland.cpp");
     }

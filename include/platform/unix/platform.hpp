@@ -11,7 +11,7 @@
     typedef struct {
         Display *lclDisplay, *recDisplay;
         XRecordContext context;
-        s_event_decl events_decl;
+        s_event_decl* events_decl;
     } s_XHeap;
 #endif
 

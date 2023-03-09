@@ -33,12 +33,18 @@ namespace platform {
         unsigned int type   = static_cast<unsigned char *>(xdata->data)[0];
         unsigned int button = static_cast<unsigned char *>(xdata->data)[1];
 
-        if ((type != MotionNotify) && // discard at once
-            ((type == ButtonPress) || (type == ButtonRelease) || (type == KeyPress) || (type == KeyRelease)))
-        {  
-            for (unsigned int i = 0; i < heap -> events_decl.count; i++) {
-                if (button == heap -> events_decl.ev_button[i]) {
-                    heap -> events_decl.flag[i] = (type==ButtonPress)||(type==KeyPress) ? true : false;
+        if (type != MotionNotify) { // discard at once (temporary)
+            
+            for (unsigned int i = 0; i < heap -> events_decl->size(); i++) {
+                if (
+                    (heap -> events_decl->at(i)->was_mouse && ((type == ButtonPress) || (type == ButtonRelease))) ||
+                    (!heap -> events_decl->at(i)->was_mouse && ((type == KeyPress) || (type == KeyRelease)))
+                ) {
+                    if (button == heap -> events_decl->at(i)->ev_button) {
+                        heap -> events_decl->at(i)->set_active(
+                            (type == ButtonPress) || (type == KeyPress) ? true : false
+                        );
+                    }
                 }
             }
         }
@@ -68,7 +74,7 @@ namespace platform {
         this->rootWindow = RootWindow(this->lclDisplay, this->lclScreen);
     }
 
-    void x11_windowing::handle_events(struct s_event_decl *events_decl) {
+    void x11_windowing::handle_events(s_event_decl *events_decl) {
         XRecordContext context;
         XRecordRange *allocRange;
         XRecordClientSpec clientSpec;
@@ -88,9 +94,9 @@ namespace platform {
         xheap.lclDisplay     = this->lclDisplay;
         xheap.recDisplay     = this->recDisplay;
         xheap.context        = context;
-        xheap.events_decl    = *events_decl;
+        xheap.events_decl    = events_decl;
         
-        if (!XRecordEnableContextAsync(recDisplay, context, this->eventCallback, reinterpret_cast<XPointer>(&xheap)))
+        if (!XRecordEnableContext(recDisplay, context, this->eventCallback, reinterpret_cast<XPointer>(&xheap)))
             throw excepts::error("Failed to start async eventCallback()", "Xorg.cpp");
 
         while (true) {

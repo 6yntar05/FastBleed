@@ -84,30 +84,31 @@ void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_ti
     // ^ Introduces randomness in the timings of pressing. Make clicks more natural. ^
 
     while (true) {
-        for (unsigned int i = 0; i < actions->count; i++) {
-
-            if (actions->flag[i]) {
+        
+        //for (auto& macro : *actions) {
+        for (unsigned int i = 0; i < actions->size(); i++) {
+            if (actions->at(i)->is_active()) {
                 cooldown = true;
-                for (int a = 0; a < static_cast<int>(actions->action->size()); a++) {
 
-                    switch (actions->action->at(a)) {
+                for (auto& action : actions->at(i)->actions) {
+                    switch (action.action) {
                         case ACT_CLICK:
-                            control->action_button(actions->action_param[i].at(a) , true);
+                            control->action_button(action.param , true);
                             break;
                         
                         case ACT_RELEASE:
-                            control->action_button(actions->action_param[i].at(a) , false);
+                            control->action_button(action.param , false);
                             break;
 
                         case ACT_CLICKER:
-                            control->action_button(actions->action_param[i].at(a) , true);
+                            control->action_button(action.param , true);
                             std::this_thread::sleep_for(std::chrono::milliseconds(timings.hold_time + entropy(gen_seed)));
-                            control->action_button(actions->action_param[i].at(a) , false);
+                            control->action_button(action.param , false);
                             std::this_thread::sleep_for(std::chrono::milliseconds(timings.release_time + entropy(gen_seed)));
                             break;
                         
                         case ACT_DELAY:
-                            std::this_thread::sleep_for(std::chrono::milliseconds(actions->action_param[i].at(a)));
+                            std::this_thread::sleep_for(std::chrono::milliseconds(action.param));
                             cooldown = false;
                             break;
                         
