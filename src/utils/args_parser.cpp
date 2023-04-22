@@ -27,22 +27,22 @@ void parse_args(const int argc, char *argv[]) {
         std::cout << "Invalid argument\n" << desc << std::endl;
         exit(0);
     }
-    if (args.count("gui")) {
-        std::cout << "gui" << std::endl;
-    }
-    if (args.count("config")) {
+    if (args.count("headless"))
+        use_gui = false;
+
+    if (args.count("config"))
         config_path = args.at("config").get_value();
-    }
-    if (args.count("verbose")) {
+
+    if (args.count("verbose"))
         be_verbose = true;
-    }
+
 #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
-    if (args.count("xorg")) {
+    if (args.count("xorg"))
         override_xorg = true;
-    }
-    if (args.count("wayland")) {
+
+    if (args.count("wayland"))
         override_wayland = true;
-    }
+
 #endif
     if (args.count("help")) {
         std::cout << desc << std::endl;

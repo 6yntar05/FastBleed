@@ -36,12 +36,13 @@ namespace platform {
         if (type != MotionNotify) { // discard at once (temporary)
             
             for (unsigned int i = 0; i < heap -> events_decl->size(); i++) {
+                s_macro* macro = heap -> events_decl->at(i);
                 if (
-                    (heap -> events_decl->at(i)->was_mouse && ((type == ButtonPress) || (type == ButtonRelease))) ||
-                    (!heap -> events_decl->at(i)->was_mouse && ((type == KeyPress) || (type == KeyRelease)))
+                    (macro->was_mouse && ((type == ButtonPress) || (type == ButtonRelease))) ||
+                    (!macro->was_mouse && ((type == KeyPress) || (type == KeyRelease)))
                 ) {
-                    if (button == heap -> events_decl->at(i)->ev_button) {
-                        heap -> events_decl->at(i)->set_active(
+                    if (button == macro->ev_button) {
+                        macro->set_active(
                             (type == ButtonPress) || (type == KeyPress) ? true : false
                         );
                     }

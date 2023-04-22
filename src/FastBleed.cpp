@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QApplication>
 
+#include <qapplication.h>
 #include <thread>
 #include <chrono>
 #include <random>
@@ -33,17 +34,17 @@ bool be_verbose         = false;
 
 void signal_handler(int signum);
 void handle_actions(std::shared_ptr<platform::control_impl> control, utils::t_timings timings, s_event_decl *actions);
-
 void handler_wrapper(std::shared_ptr<platform::control_impl> control, s_event_decl* arg) { control->handle_events(arg); }
 
 int main(int argc, char* argv[]) {
-    // Gui
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-
     utils::parse_args(argc, argv);
     utils::c_config config {config_path};
+
+    // Gui
+    QApplication a {argc, argv};
+    MainWindow w;
+    if (use_gui)
+        w.show();
 
     // Pick platform-non-specifically abstraction
     std::shared_ptr<platform::control_impl> control = platform::get_platform();
@@ -64,6 +65,7 @@ int main(int argc, char* argv[]) {
     ui::msg("Starting action handler");
     std::thread handler_thread(handler_wrapper, control, &events_decl);
     handler_thread.detach();
+    //handler_thread.join();
 
     return a.exec();
 }
