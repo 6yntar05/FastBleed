@@ -1,9 +1,3 @@
-#include "ui/mainwindow.h"
-
-#include <QMainWindow>
-#include <QApplication>
-
-#include <qapplication.h>
 #include <thread>
 #include <chrono>
 #include <random>
@@ -18,7 +12,6 @@
 #include "platform/platform.hpp"                                // platform::init() returns platform-non-specifically abstraction
 #include "runtime.hpp"                                          // Flags, constants and shared points
 
-
 /// Load hardcoded vars
 float cps                       = c_cps;
 float relation                  = c_relation;
@@ -27,7 +20,6 @@ unsigned int actions_cooldown   = c_actions_cooldown;
 std::string config_path         = c_config_path;
 
 // Runtime flags
-bool use_gui            = c_use_gui;
 bool override_wayland   = false;
 bool override_xorg      = false;
 bool be_verbose         = false;
@@ -39,12 +31,6 @@ void handler_wrapper(std::shared_ptr<platform::control_impl> control, s_event_de
 int main(int argc, char* argv[]) {
     utils::parse_args(argc, argv);
     utils::c_config config {config_path};
-
-    // Gui
-    QApplication a {argc, argv};
-    MainWindow w;
-    if (use_gui)
-        w.show();
 
     // Pick platform-non-specifically abstraction
     std::shared_ptr<platform::control_impl> control = platform::get_platform();
@@ -64,10 +50,9 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, signal_handler);
     ui::msg("Starting action handler");
     std::thread handler_thread(handler_wrapper, control, &events_decl);
-    handler_thread.detach();
-    //handler_thread.join();
+    handler_thread.join();
 
-    return a.exec();
+    return 0;
 }
 
 void signal_handler(int signum) {

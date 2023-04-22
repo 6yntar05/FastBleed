@@ -9,7 +9,7 @@
 namespace utils {
 
 class c_config {
-  private:
+private:
     std::string PATH;
     s_event_decl ret;
     bool allocated = false;
@@ -22,8 +22,7 @@ class c_config {
         umap["RELEASE"] = ACT_RELEASE;
         umap["MOVE"] = ACT_MOVE;
         umap["CLICKER"] = ACT_CLICKER;
-        umap["TEXT_TYPE"] = ACT_TEXT_TYPE;
-        umap["SYS_EXEC"] = ACT_SYS_EXEC;
+        umap["TEXT_TYPE"] = ACT_TEXT_TYPE; // TODO: binder??
 
         if (umap.find(str) == umap.end())
             ui::error("Config syntax error : Invalid action \"" + str + "\"");
@@ -31,7 +30,7 @@ class c_config {
         return umap.at(str);
     }
 
-  public:
+public:
     s_event_decl parse();
     c_config() : c_config("./config.cfg") {};
     c_config(std::string path);

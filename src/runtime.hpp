@@ -9,7 +9,6 @@ extern float relation;
 extern unsigned int entropy_variation;
 extern unsigned int actions_cooldown;
 extern std::string config_path;
-extern bool use_gui;
 
 /// Runtime flags
 extern bool override_wayland, override_xorg, be_verbose;

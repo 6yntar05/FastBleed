@@ -2,13 +2,13 @@
 	"items": [
 		{
 			"trigger": 9,
-			"actions": ["CLICKER", "DELAY"],
-			"act_params": [1, 0]
+			"actions": ["CLICKER"],
+			"act_params": [1]
 		},
 		{
 			"trigger": 8,
-			"actions": ["CLICKER", "DELAY", "SYS_EXEC"],
-			"act_params": [3, 0, "/bin/sh -c 'touch ./test'"]
+			"actions": ["CLICKER"],
+			"act_params": [3]
 		}
 	]
 }

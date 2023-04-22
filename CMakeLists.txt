@@ -1,24 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
-project(            FastBleed
-    DESCRIPTION     "Yet another Macro-manager"
+project( FastBleed
+    DESCRIPTION     "Yet another clicker"
     HOMEPAGE_URL    "https://github.com/6yntar05/FastBleed"
     LANGUAGES       CXX
 )
 
 ### COMPILE PROPERTIES ###
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)   # NOTE: conflict with gui.cpp 
-set(CMAKE_AUTORCC ON)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### OPTIONS ###
 option(USE_SAN "Compile with sanitizers (Only debug version)" OFF)
-option(USE_GUI "Build with Qt GUI support" ON)
-
 function (no_msvc)
     if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
         add_compile_options(-O0 -g)
@@ -58,11 +51,6 @@ function (submodules_update)
     endif ()
 endfunction ()
 
-### Finding QT ###
-message         (">> Finding Qt")
-find_package    (QT NAMES Qt5 Qt6 QUIET COMPONENTS Widgets)
-find_package    (Qt${QT_VERSION_MAJOR} QUIET COMPONENTS Widgets)
-
 ### SRC FILES ###
 file(GLOB SRCFILES "./src/*.cpp")                                               # In main dir
 file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/utils/*.cpp" "./src/ui/*")    # Other dirs
@@ -73,24 +61,11 @@ elseif (WIN32)
 elseif (APPLE)
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/apple/*.cpp")
 endif()
-file(GLOB_RECURSE SRCFILES ${SRCFILES} "./include/ui/*.h")
+file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/ui/*.h")
 
-include_directories(AFTER SYSTEM ./include)
-
-if (QT_FOUND)
-    add_compile_definitions (USE_GUI)
-    if (QT_VERSION_MAJOR GREATER_EQUAL 6)
-        qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${SRCFILES})
-        qt_finalize_executable(${PROJECT_NAME})
-    else ()
-        add_executable(${PROJECT_NAME} ${SRCFILES})
-    endif ()
-    target_link_libraries   (${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
-else ()
-    message                 (FATAL_ERROR "QT Not found! Install QT and add it to PATH")
-endif ()
-
-target_include_directories(${PROJECT_NAME} PRIVATE ./include)
+include_directories(AFTER SYSTEM ./src)
+add_executable(${PROJECT_NAME} ${SRCFILES})
+target_include_directories(${PROJECT_NAME} PRIVATE ./src)
 
 ### SIMDJSON ###
 add_subdirectory        (./libs/simdjson)
