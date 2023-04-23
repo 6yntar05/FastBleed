@@ -9,69 +9,71 @@
 #include <excepts.hpp>
 
 #ifdef USE_WAYLAND
-    #include <wayland-client.h>
-    #include <wayland-server.h>
-    #include <wayland-client-protocol.h>
-    #include <wayland-server-protocol.h>
+    #include <libinput.h>
+
+    #if defined (LINUX) || defined(__linux__)  || defined(ANDROID)
+        #include <linux/input-event-codes.h>
+    #else //if defined(__FreeBSD__) || defined(__BSD__)
+        #include <dev/evdev/input-event-codes.h>
+        // TODO: check events for BSD
+    #endif
 #endif
 
 namespace platform {
 
 #ifdef USE_WAYLAND
-
-    wl_compositor *compositor = NULL;
-
-    void pointer_register_handler(
-            void *data, struct wl_registry *registry, uint32_t id,
-            const char *interface, uint32_t version) {
-
-        //uint32_t registry_pointer_id;
-
-        if (static_cast<std::string>(interface) == "zwlr_virtual_pointer_manager_v1") {
-            std::cerr << "Found interface: " << interface << "; ID: " << id << std::endl;
-            //registry_pointer_id = id;
-        }
-    }
-
-    struct wl_registry_listener registry_listener = {
-        pointer_register_handler,
-        {}
-    };
-
 /*********************[  class wayland_windowing : control_impl {  ]**********************/
     wayland_windowing::~wayland_windowing() {
-        wl_display_disconnect(display);
+        libinput_unref(li);
     }
 
     void wayland_windowing::init() {
-        if (this->display = wl_display_connect(NULL); this->display == NULL) {
-            throw excepts::error("Display is null", "Wayland.cpp");
-        }
+        // Just use libinput instead wayland client lol
+        this->li = libinput_udev_create_context(&this->interface, NULL, udev_new());
+        if (this->li == nullptr)
+            throw excepts::error("Libinput is null", "Wayland.cpp");
 
-        if (this->registry = wl_display_get_registry(this->display); this->registry == NULL) {
-            throw excepts::error("Display registry is null", "Wayland.cpp");
-        }
-
-        wl_registry_add_listener(this->registry, &registry_listener, NULL);
-        
-        wl_display_dispatch(this->display);
-        wl_display_roundtrip(this->display);
-
-        //wl_keyboard *keyboard = wl_seat_get_keyboard(this->seat);
-        //wl_pointer *pointer = wl_seat_get_pointer(this->seat);
-        //wl_pointer_send_button(this->resource, 0, 0, 1, 1);
-
-        wl_registry_destroy(this->registry);
+        libinput_udev_assign_seat(li, "seat0");
     }
 
-    void wayland_windowing::handle_events(s_event_decl *events_decl) {
-        //display = wl_display_connect(NULL);
-        throw excepts::error("Not implemented", "Wayland.cpp");
+    void wayland_windowing::handle_events(s_event_decl* events_decl) {
+        // todo: get rid while true
+        while (true) {
+            int rc = libinput_dispatch(li);
+            if (rc != 0) { std::cerr << "dispatcher errors detected\n" << std::flush; break; }
+            
+            libinput_event* event = libinput_get_event(li);
+            if (!event) continue;
+
+            // Catch the event!
+            switch (libinput_event_get_type(event)) {
+                case LIBINPUT_EVENT_POINTER_BUTTON:
+                    uint32_t button_index;
+                    bool button_state;
+                    libinput_event_pointer* ptrev;
+
+                    // Handle event
+                    ptrev = libinput_event_get_pointer_event(event);
+                    button_index = libinput_event_pointer_get_button(ptrev);
+                    button_state = libinput_event_pointer_get_button_state(ptrev);
+                    //std::cout << button_index << "|" << button_state << '\n';
+
+                    // Match with triggers
+                    for (auto& match_decl : *events_decl) {
+                        if (!match_decl->was_mouse) break;
+                        if (button_index == 0x110 + match_decl->ev_button - 5)
+                            match_decl->set_active(button_state);
+                    }
+                    break;
+                
+                default: break; // Not implemented
+            }
+            std::cout << std::flush;
+            libinput_event_destroy(event);
+        }
     }
 
     void wayland_windowing::action_button(int keysym, bool pressing) const {
-        //display = wl_display_connect(NULL);
-        std::cerr << "Not implemented for now!\n";
         throw excepts::error("Not implemented", "Wayland.cpp");
     }
 
@@ -86,7 +88,7 @@ namespace platform {
         throw excepts::error("This build completed without Wayland support");
     }
 
-    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+    void wayland_windowing::handle_events(s_event_decl *events_decl) {
         throw excepts::error("This build completed without Wayland support");
     }
     

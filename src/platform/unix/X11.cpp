@@ -35,19 +35,16 @@ namespace platform {
 
         if (type != MotionNotify) { // discard at once (temporary)
             
-            for (unsigned int i = 0; i < heap -> events_decl->size(); i++) {
-                s_macro* macro = heap -> events_decl->at(i);
-                if (
-                    (macro->was_mouse && ((type == ButtonPress) || (type == ButtonRelease))) ||
-                    (!macro->was_mouse && ((type == KeyPress) || (type == KeyRelease)))
-                ) {
-                    if (button == macro->ev_button) {
-                        macro->set_active(
-                            (type == ButtonPress) || (type == KeyPress) ? true : false
-                        );
-                    }
-                }
-            }
+            for (s_macro* macro : *heap->events_decl)
+                if (((macro->was_mouse && ((type == ButtonPress) || (type == ButtonRelease))) ||
+                    (!macro->was_mouse && ((type == KeyPress) || (type == KeyRelease))))
+                    && (macro->ev_button == button)
+                )
+                    macro->set_active(
+                        (type == ButtonPress) || (type == KeyPress) ?
+                            true :
+                            false
+                    );
         }
 
         XRecordFreeData(xdata);
@@ -75,7 +72,7 @@ namespace platform {
         this->rootWindow = RootWindow(this->lclDisplay, this->lclScreen);
     }
 
-    void x11_windowing::handle_events(s_event_decl *events_decl) {
+    void x11_windowing::handle_events(s_event_decl* events_decl) {
         XRecordContext context;
         XRecordRange *allocRange;
         XRecordClientSpec clientSpec;

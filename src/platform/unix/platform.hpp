@@ -16,9 +16,9 @@
 #endif
 
 #ifdef USE_WAYLAND
-    #include <wayland-client.h>
-    #include <wayland-server.h>
-    #include <wayland-client-protocol.h>
+    #include <libinput.h>
+    #include <unistd.h>
+    #include <fcntl.h>
 #endif
 
 enum e_windowings { X11, Wayland, Empty };
@@ -53,19 +53,21 @@ public:
 class wayland_windowing : public control_impl {
 private:
     #ifdef USE_WAYLAND
-        wl_display *display = NULL;
-        wl_registry *registry = NULL;
-        wl_seat *seat = NULL;
-        wl_resource *resource = NULL;
+        static int open_restricted(const char *path, int flags, void *user_data) {
+            int fd = open(path, flags);
+            return fd < 0 ? -errno : fd;
+        }
+        
+        static void close_restricted(int fd, void *user_data) {
+            close(fd);
+        }
+        
+        constexpr static libinput_interface interface = {
+            .open_restricted = open_restricted,
+            .close_restricted = close_restricted,
+        };
 
-        /*
-        size_t keymap_len;
-        struct keymap_entry *keymap;
-
-        uint32_t mod_status;
-        size_t command_count;
-        struct wtype_command *commands;
-        */
+        libinput* li;
     #endif
 public:
     ~wayland_windowing();

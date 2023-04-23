@@ -5,14 +5,14 @@
 #include <functional>
 
 #include "utils/config.hpp"         // Config <-> FastBleed layer
-#include "properties.hpp"           // Constants
 #include "ui/feedback.hpp"          // ui::info/warn/error
 #include "utils/args.hpp"           // utils::parse_args()
 #include "utils/timings.hpp"        // utils::calculate_timings()
 #include "platform/platform.hpp"    // platform::init() returns platform-non-specifically abstraction
+#include "properties.hpp"           // Constants
 #include "runtime.hpp"              // Flags, constants and shared points
 
-/// Load hardcoded vars
+// Load hardcoded vars
 float cps                       = c_cps;
 float relation                  = c_relation;
 unsigned int entropy_variation  = c_entropy_variation;

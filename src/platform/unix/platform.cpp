@@ -1,11 +1,13 @@
+#include "platform/unix/platform.hpp"
+#include "ui/feedback.hpp"
+
+#include "runtime.hpp"
+#include "excepts.hpp"
+
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 #include <memory>
-#include "platform/unix/platform.hpp"
-#include "ui/feedback.hpp"
-#include "runtime.hpp"
-#include "excepts.hpp"
 
 namespace platform {
 
