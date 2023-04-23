@@ -110,13 +110,9 @@ namespace platform {
         XFree(allocRange);
     }
 
-    void x11_windowing::action_button(int keysym, bool pressing) {
+    void x11_windowing::action_button(int keysym, bool pressing) const {
         XTestFakeButtonEvent(this->lclDisplay, keysym, pressing, CurrentTime);
         XFlush(this->lclDisplay);
-    }
-
-    void x11_windowing::exec(std::string command) {
-        system(command.c_str());
     }
 
 /*********************[ }; //class x11_windowing : control_impl ]*********************/
@@ -130,16 +126,12 @@ namespace platform {
         throw excepts::error("This build completed without X11 support");
     }
 
-    void x11_windowing::action_button(int keysym, bool pressing) {
-        throw excepts::error("This build completed without X11 support");
-    }
-
     void x11_windowing::handle_events(struct s_event_decl *events_decl) {
         throw excepts::error("This build completed without X11 support");
     }
 
-    void x11_windowing::exec(std::string command) {
-        system(command.c_str());
+    void x11_windowing::action_button(int keysym, bool pressing) const {
+        throw excepts::error("This build completed without X11 support");
     }
 /*********************[ }; //class x11_windowing : control_impl ]*********************/
 

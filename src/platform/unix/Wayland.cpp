@@ -69,14 +69,10 @@ namespace platform {
         throw excepts::error("Not implemented", "Wayland.cpp");
     }
 
-    void wayland_windowing::action_button(int keysym, bool pressing) {
+    void wayland_windowing::action_button(int keysym, bool pressing) const {
         //display = wl_display_connect(NULL);
         std::cerr << "Not implemented for now!\n";
         throw excepts::error("Not implemented", "Wayland.cpp");
-    }
-
-    void wayland_windowing::exec(std::string command) {
-        system(command.c_str());
     }
 
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/
@@ -90,11 +86,11 @@ namespace platform {
         throw excepts::error("This build completed without Wayland support");
     }
 
-    void wayland_windowing::action_button(int keysym, bool pressing) {
+    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
         throw excepts::error("This build completed without Wayland support");
     }
-
-    void wayland_windowing::handle_events(struct s_event_decl *events_decl) {
+    
+    void wayland_windowing::action_button(int keysym, bool pressing) const {
         throw excepts::error("This build completed without Wayland support");
     }
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/

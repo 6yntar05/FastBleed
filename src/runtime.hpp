@@ -21,7 +21,6 @@ enum e_actions {
     ACT_MOVE,
     ACT_CLICKER,
     ACT_TEXT_TYPE,
-    ACT_SYS_EXEC,
     ACT_NULL
 };
 
@@ -33,10 +32,10 @@ struct s_action {
 using vec_actions = std::vector<s_action>;
 
 struct s_macro {
-  private:
+private:
     bool active_flag    = false;
 
-  public:
+public:
     // trigger:
     bool was_mouse      = false;
     unsigned int ev_button;

@@ -27,12 +27,11 @@ namespace platform {
 
 class control_impl {
 public:
-    virtual ~control_impl()                                 = default;
-    virtual void init()                                     = 0;
-    virtual void handle_events(s_event_decl *events_decl)   = 0;
+    virtual ~control_impl() = default;
+    virtual void init() = 0;
+    virtual void handle_events(s_event_decl *events_decl) = 0;
     // Actions
-    virtual void action_button(int keysym, bool pressing)   = 0;
-    virtual void exec(std::string command)                  = 0;
+    virtual void action_button(int keysym, bool pressing) const = 0;
 };
 
 class x11_windowing : public control_impl {
@@ -48,8 +47,7 @@ public:
     ~x11_windowing();
     void init();
     void handle_events(s_event_decl *events_decl);
-    void action_button(int keysym, bool pressing);
-    void exec(std::string command);
+    void action_button(int keysym, bool pressing) const;
 };
 
 class wayland_windowing : public control_impl {
@@ -73,8 +71,7 @@ public:
     ~wayland_windowing();
     void init();
     void handle_events(s_event_decl *events_decl);
-    void action_button(int keysym, bool pressing);
-    void exec(std::string command);
+    void action_button(int keysym, bool pressing) const;
 };
 
 class user_windowing {

@@ -4,6 +4,8 @@ project( FastBleed
     HOMEPAGE_URL    "https://github.com/6yntar05/FastBleed"
     LANGUAGES       CXX
 )
+include("./cmake/compiller_props.cmake")
+include("./cmake/submodules.cmake")
 
 ### COMPILE PROPERTIES ###
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -11,50 +13,20 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### OPTIONS ###
-option(USE_SAN "Compile with sanitizers (Only debug version)" OFF)
-function (no_msvc)
-    if ("${CMAKE_BUILD_TYPE}" STRGREATER_EQUAL "DEBUG")
-        add_compile_options(-O0 -g)
-        if (USE_SAN)
-            add_compile_options(-fsanitize=thread -fsanitize=address)
-            add_link_options(-fsanitize=thread -fsanitize=address)
-        endif ()
-    else ()
-        add_compile_options(-O3)
-    endif ()
-endfunction()
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fdiagnostics-color=always)
-    no_msvc()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -fcolor-diagnostics)
-    no_msvc()
-endif ()
+option(USE_Compiler_PROPERTIES "Use cringe compiler propertires" ON)
+if(${USE_Compiler_PROPERTIES})
+    SetCompilerProperties()
+endif()
 
 ### SUBMODULES ###
-function (submodules_update)
-    find_package(Git QUIET)
-    if (GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-        option(GIT_SUBMODULE "Check submodules during build" ON)
-        if (GIT_SUBMODULE)
-            message (">> Update submodules")
-            execute_process(
-                COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                RESULT_VARIABLE GIT_SUBMOD_RESULT
-            )
-            if (NOT GIT_SUBMOD_RESULT EQUAL "0")
-                message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-            endif ()
-        endif ()
-    endif ()
-endfunction ()
+submodules_update()
 
 ### SRC FILES ###
-file(GLOB SRCFILES "./src/*.cpp")                                               # In main dir
-file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/utils/*.cpp" "./src/ui/*")    # Other dirs
-if (UNIX)                                                                       # Compile-time platform selection
+# Find all src files except "platform"
+file(GLOB SRCFILES "./src/*.cpp")
+file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/utils/*.cpp" "./src/ui/*")
+
+if (UNIX) # Compile-time platform selection
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/unix/*.cpp")
 elseif (WIN32)
     file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/platform/winapi/*.cpp")

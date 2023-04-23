@@ -1,4 +1,4 @@
-#include <string>
+#include <string_view>
 
 #ifdef USE_COLORS
     #define CLR "\033[0m"
@@ -13,10 +13,10 @@
 #endif
 
 namespace ui {
-
-void error(std::string msg);
-void warn(std::string msg);
-void info(std::string msg);
-void msg(std::string msg);
+// todo: ostream
+void error(std::string_view msg);
+void warn(std::string_view msg);
+void info(std::string_view msg);
+void msg(std::string_view msg);
 
 }
