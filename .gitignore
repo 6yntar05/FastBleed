@@ -1,6 +1,8 @@
 build
 cmake-build-*
-.*
+.vscode
+.cache
+libs/protocols
 
 # Prerequisites
 *.d

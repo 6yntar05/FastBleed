@@ -1,7 +1,7 @@
 # FastBleed
 Yet another lightweight CLIcker
 
-###### Only for unix systems for now
+###### Only for X11/UInput systems for now
 
 ## Building
 ### Dependencies (Optional):
@@ -9,6 +9,7 @@ Yet another lightweight CLIcker
   <br>and/or
 - libinput
 - libudev
+- linux
 
 ### Building
 ```sh
@@ -21,10 +22,10 @@ cmake --build ./ -j$(nproc)
 ```
 
 ### CMake options
-- -DUSE_X11=ON/OFF              # Include X11 libraries and compile X11 implementation
-- -DUSE_WAYLAND=ON/OFF          # Include libinput and compile Wayland implementation
-- -DUSE_COLORS=ON/OFF           # Use colorful output
-- 
+- `-DUSE_UINPUT=ON/OFF`           # Include compile uinput implementation
+- `-DUSE_X11=ON/OFF`              # Include X11 libraries and compile X11 implementation
+- `-DUSE_COLORS=ON/OFF`           # Use colorful output
+
 ## Usage
 ```sh
 ./FastBleed --help

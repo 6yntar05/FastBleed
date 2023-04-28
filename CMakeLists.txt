@@ -36,6 +36,7 @@ endif()
 file(GLOB_RECURSE SRCFILES ${SRCFILES} "./src/ui/*.h")
 
 include_directories(AFTER SYSTEM ./src)
+include_directories(AFTER SYSTEM ./libs/protocols)
 add_executable(${PROJECT_NAME} ${SRCFILES})
 target_include_directories(${PROJECT_NAME} PRIVATE ./src)
 

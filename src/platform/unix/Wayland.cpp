@@ -11,29 +11,75 @@
 #ifdef USE_WAYLAND
     #include <libinput.h>
 
-    #if defined (LINUX) || defined(__linux__)  || defined(ANDROID)
+    //#if defined (LINUX) || defined(__linux__)  || defined(ANDROID)
+        #include <cstring>
         #include <linux/input-event-codes.h>
-    #else //if defined(__FreeBSD__) || defined(__BSD__)
-        #include <dev/evdev/input-event-codes.h>
-        // TODO: check events for BSD
-    #endif
+        #include <linux/input.h>
+        #include <linux/uinput.h>
+        #include <sys/types.h>
+        #include <sys/stat.h>
+        #include <fcntl.h>
+        #include <unistd.h>
+    //#else
+    //    #error uinput available only for linux kernel
+    //#endif
 #endif
 
 namespace platform {
 
 #ifdef USE_WAYLAND
+void emit(int fd, int type, int code, int val) {
+   struct input_event ie;
+
+   ie.type = type;
+   ie.code = code;
+   ie.value = val;
+   /* timestamp values below are ignored */
+   ie.time.tv_sec = 0;
+   ie.time.tv_usec = 0;
+
+   write(fd, &ie, sizeof(ie));
+}
+
+static constexpr int EVDEV_MOUSEKEYS = 0x110 - 1;
+
 /*********************[  class wayland_windowing : control_impl {  ]**********************/
     wayland_windowing::~wayland_windowing() {
         libinput_unref(li);
+        ioctl(fd, UI_DEV_DESTROY);
+        close(fd);
     }
 
     void wayland_windowing::init() {
+        /// LIBINPUT ///
         // Just use libinput instead wayland client lol
         this->li = libinput_udev_create_context(&this->interface, NULL, udev_new());
         if (this->li == nullptr)
             throw excepts::error("Libinput is null", "Wayland.cpp");
 
         libinput_udev_assign_seat(li, "seat0");
+
+        /// UINPUT ///
+        struct uinput_setup usetup;
+        this->fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+
+        /* enable mouse button left and relative events */
+        ioctl(fd, UI_SET_EVBIT, EV_KEY);
+        ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
+        ioctl(fd, UI_SET_KEYBIT, BTN_RIGHT);
+
+        ioctl(fd, UI_SET_EVBIT, EV_REL);
+        ioctl(fd, UI_SET_RELBIT, REL_X);
+        ioctl(fd, UI_SET_RELBIT, REL_Y);
+
+        memset(&usetup, 0, sizeof(usetup));
+        usetup.id.bustype = BUS_USB;
+        usetup.id.vendor = 0x1234; /* sample vendor */
+        usetup.id.product = 0x5678; /* sample product */
+        strcpy(usetup.name, "Generic USB Mouse");
+
+        ioctl(fd, UI_DEV_SETUP, &usetup);
+        ioctl(fd, UI_DEV_CREATE);
     }
 
     void wayland_windowing::handle_events(s_event_decl* events_decl) {
@@ -61,7 +107,7 @@ namespace platform {
                     // Match with triggers
                     for (auto& match_decl : *events_decl) {
                         if (!match_decl->was_mouse) break;
-                        if (button_index == 0x110 + match_decl->ev_button - 5)
+                        if (button_index == EVDEV_MOUSEKEYS + match_decl->ev_button - 4)
                             match_decl->set_active(button_state);
                     }
                     break;
@@ -74,7 +120,8 @@ namespace platform {
     }
 
     void wayland_windowing::action_button(int keysym, bool pressing) const {
-        throw excepts::error("Not implemented", "Wayland.cpp");
+        emit(fd, EV_KEY, EVDEV_MOUSEKEYS + keysym, pressing);
+        emit(fd, EV_SYN, SYN_REPORT, 0);
     }
 
 /*********************[ }; //class wayland_windowing : control_impl ]*********************/

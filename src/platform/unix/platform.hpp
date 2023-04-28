@@ -63,11 +63,12 @@ private:
         }
         
         constexpr static libinput_interface interface = {
-            .open_restricted = open_restricted,
+            .open_restricted  = open_restricted,
             .close_restricted = close_restricted,
         };
 
         libinput* li;
+        int fd;
     #endif
 public:
     ~wayland_windowing();
