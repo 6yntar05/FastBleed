@@ -98,7 +98,7 @@ static void setup_uinput_device(int& fd) {
                     // Match with triggers
                     for (auto& match_decl : *events_decl) {
                         if (!match_decl->was_mouse) break;
-                        std::cout << button_index << '\n';
+                        //std::cout << button_index << '\n';
                         if (button_index == EVDEV_MOUSEKEYS + match_decl->ev_button - 4)
                             match_decl->set_active(button_state);
                     }
@@ -112,7 +112,7 @@ static void setup_uinput_device(int& fd) {
     }
 
     void uinput_control::action_button(int keysym, bool pressing) const {
-        std::cout << keysym << ":" << pressing << '\n';
+        //std::cout << keysym << ":" << pressing << '\n';
         input_event ie { {0, 0}, EV_KEY,
             static_cast<ushort>(EVDEV_MOUSEKEYS + keysym),
             pressing
