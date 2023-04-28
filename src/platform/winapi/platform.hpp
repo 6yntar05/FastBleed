@@ -13,7 +13,7 @@ public:
     void handle_events(s_event_decl *events_decl);
 };
 
-class user_windowing {
+class user_control {
 public:
     std::shared_ptr<control_impl> make_api();
 };

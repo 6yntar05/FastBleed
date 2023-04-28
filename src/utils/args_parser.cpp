@@ -13,8 +13,8 @@ void parse_args(const int argc, char *argv[]) {
         ("verbose,v", "Be verbose")
         ("config,c", "Path to config file", true)
         #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
+            ("uinput,u", "Override uinput (default)")
             ("xorg,x", "Override Xorg")
-            ("wayland,w", "Override Wayland")
         #endif
     ;
 
@@ -36,12 +36,11 @@ void parse_args(const int argc, char *argv[]) {
         be_verbose = true;
 
 #if defined __unix__ || defined (LINUX) || defined(__linux__) || defined(__FreeBSD__)
+    if (args.count("uinput"))
+        override_uinput = true;
+
     if (args.count("xorg"))
         override_xorg = true;
-
-    if (args.count("wayland"))
-        override_wayland = true;
-
 #endif
 }
 

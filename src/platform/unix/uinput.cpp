@@ -8,7 +8,7 @@
 #include "runtime.hpp"
 #include <excepts.hpp>
 
-#ifdef USE_WAYLAND
+#ifdef USE_UINPUT
     #include <libinput.h>
 
     //#if defined (LINUX) || defined(__linux__)  || defined(ANDROID)
@@ -27,62 +27,50 @@
 
 namespace platform {
 
-#ifdef USE_WAYLAND
-void emit(int fd, int type, int code, int val) {
-   struct input_event ie;
+#ifdef USE_UINPUT
 
-   ie.type = type;
-   ie.code = code;
-   ie.value = val;
-   /* timestamp values below are ignored */
-   ie.time.tv_sec = 0;
-   ie.time.tv_usec = 0;
+static constexpr int EVDEV_MOUSEKEYS = BTN_LEFT - 1; 
 
-   write(fd, &ie, sizeof(ie));
+static void setup_uinput_device(int& fd) {
+    uinput_setup usetup {{}, "Generic USB Mouse", {}};
+    fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+
+    ioctl(fd, UI_SET_EVBIT, EV_KEY);
+    ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
+    ioctl(fd, UI_SET_KEYBIT, BTN_RIGHT);
+    //ioctl(fd, UI_SET_EVBIT, EV_REL);
+    //ioctl(fd, UI_SET_RELBIT, REL_X);
+    //ioctl(fd, UI_SET_RELBIT, REL_Y);
+
+    usetup.id.bustype = BUS_USB;
+    usetup.id.vendor = 0x1234;
+    usetup.id.product = 0x5678;
+
+    ioctl(fd, UI_DEV_SETUP, &usetup);
+    ioctl(fd, UI_DEV_CREATE);
 }
 
-static constexpr int EVDEV_MOUSEKEYS = 0x110 - 1;
-
-/*********************[  class wayland_windowing : control_impl {  ]**********************/
-    wayland_windowing::~wayland_windowing() {
+/*********************[  class uinput_control : control_impl {  ]**********************/
+    uinput_control::~uinput_control() {
         libinput_unref(li);
         ioctl(fd, UI_DEV_DESTROY);
         close(fd);
     }
 
-    void wayland_windowing::init() {
+    void uinput_control::init() {
         /// LIBINPUT ///
-        // Just use libinput instead wayland client lol
+        // Just use libinput instead uinput client lol
         this->li = libinput_udev_create_context(&this->interface, NULL, udev_new());
         if (this->li == nullptr)
-            throw excepts::error("Libinput is null", "Wayland.cpp");
+            throw excepts::error("Libinput is null", "uinput.cpp");
 
         libinput_udev_assign_seat(li, "seat0");
 
         /// UINPUT ///
-        struct uinput_setup usetup;
-        this->fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
-
-        /* enable mouse button left and relative events */
-        ioctl(fd, UI_SET_EVBIT, EV_KEY);
-        ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
-        ioctl(fd, UI_SET_KEYBIT, BTN_RIGHT);
-
-        ioctl(fd, UI_SET_EVBIT, EV_REL);
-        ioctl(fd, UI_SET_RELBIT, REL_X);
-        ioctl(fd, UI_SET_RELBIT, REL_Y);
-
-        memset(&usetup, 0, sizeof(usetup));
-        usetup.id.bustype = BUS_USB;
-        usetup.id.vendor = 0x1234; /* sample vendor */
-        usetup.id.product = 0x5678; /* sample product */
-        strcpy(usetup.name, "Generic USB Mouse");
-
-        ioctl(fd, UI_DEV_SETUP, &usetup);
-        ioctl(fd, UI_DEV_CREATE);
+        setup_uinput_device(this->fd);
     }
 
-    void wayland_windowing::handle_events(s_event_decl* events_decl) {
+    void uinput_control::handle_events(s_event_decl* events_decl) {
         // todo: get rid while true
         while (true) {
             int rc = libinput_dispatch(li);
@@ -119,30 +107,38 @@ static constexpr int EVDEV_MOUSEKEYS = 0x110 - 1;
         }
     }
 
-    void wayland_windowing::action_button(int keysym, bool pressing) const {
-        emit(fd, EV_KEY, EVDEV_MOUSEKEYS + keysym, pressing);
-        emit(fd, EV_SYN, SYN_REPORT, 0);
+    void uinput_control::action_button(int keysym, bool pressing) const {
+        input_event ie { {0, 0}, EV_KEY,
+            static_cast<ushort>(EVDEV_MOUSEKEYS + keysym),
+            pressing
+        };
+        write(fd, &ie, sizeof(ie));
+
+        ie.code = EV_SYN;
+        ie.type = SYN_REPORT;
+        ie.value = 0;
+        write(fd, &ie, sizeof(ie));
     }
 
-/*********************[ }; //class wayland_windowing : control_impl ]*********************/
+/*********************[ }; //class uinput_control : control_impl ]*********************/
 
-#else /* If this build completed whithout Wayland support */
+#else /* If this build completed whithout uinput support */
 
-/*********************[  class wayland_windowing : control_impl {  ]**********************/
-    wayland_windowing::~wayland_windowing() {}
+/*********************[  class uinput_control : control_impl {  ]**********************/
+    uinput_control::~uinput_control() {}
 
-    void wayland_windowing::init() {
-        throw excepts::error("This build completed without Wayland support");
+    void uinput_control::init() {
+        throw excepts::error("This build completed without uinput support");
     }
 
-    void wayland_windowing::handle_events(s_event_decl *events_decl) {
-        throw excepts::error("This build completed without Wayland support");
+    void uinput_control::handle_events(s_event_decl *events_decl) {
+        throw excepts::error("This build completed without uinput support");
     }
     
-    void wayland_windowing::action_button(int keysym, bool pressing) const {
-        throw excepts::error("This build completed without Wayland support");
+    void uinput_control::action_button(int keysym, bool pressing) const {
+        throw excepts::error("This build completed without uinput support");
     }
-/*********************[ }; //class wayland_windowing : control_impl ]*********************/
+/*********************[ }; //class uinput_control : control_impl ]*********************/
 
 #endif
 

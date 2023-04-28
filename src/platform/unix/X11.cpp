@@ -22,7 +22,7 @@ namespace platform {
 
 #ifdef USE_X11
 
-    void x11_windowing::eventCallback(XPointer xheap, XRecordInterceptData *xdata) {
+    void x11_control::eventCallback(XPointer xheap, XRecordInterceptData *xdata) {
         s_XHeap *heap = reinterpret_cast<s_XHeap*>(xheap);
 
         if (xdata->category != XRecordFromServer) {
@@ -50,15 +50,15 @@ namespace platform {
         XRecordFreeData(xdata);
     }
 
-/*********************[  class x11_windowing : control_impl {  ]**********************/
-    x11_windowing::~x11_windowing() {
+/*********************[  class x11_control : control_impl {  ]**********************/
+    x11_control::~x11_control() {
         if (this->lclDisplay) {
             XCloseDisplay(this->lclDisplay);
             XCloseDisplay(this->recDisplay);
         }
     }
 
-    void x11_windowing::init() {
+    void x11_control::init() {
         this->lclDisplay = XOpenDisplay(0); //Take out!
         this->recDisplay = XOpenDisplay(0);
 
@@ -72,7 +72,7 @@ namespace platform {
         this->rootWindow = RootWindow(this->lclDisplay, this->lclScreen);
     }
 
-    void x11_windowing::handle_events(s_event_decl* events_decl) {
+    void x11_control::handle_events(s_event_decl* events_decl) {
         XRecordContext context;
         XRecordRange *allocRange;
         XRecordClientSpec clientSpec;
@@ -107,30 +107,30 @@ namespace platform {
         XFree(allocRange);
     }
 
-    void x11_windowing::action_button(int keysym, bool pressing) const {
+    void x11_control::action_button(int keysym, bool pressing) const {
         XTestFakeButtonEvent(this->lclDisplay, keysym, pressing, CurrentTime);
         XFlush(this->lclDisplay);
     }
 
-/*********************[ }; //class x11_windowing : control_impl ]*********************/
+/*********************[ }; //class x11_control : control_impl ]*********************/
 
 #else /* If this build completed whithout X11 support */
 
-/*********************[  class x11_windowing : control_impl {  ]**********************/
-    x11_windowing::~x11_windowing() {}
+/*********************[  class x11_control : control_impl {  ]**********************/
+    x11_control::~x11_control() {}
     
-    void x11_windowing::init() {
+    void x11_control::init() {
         throw excepts::error("This build completed without X11 support");
     }
 
-    void x11_windowing::handle_events(struct s_event_decl *events_decl) {
+    void x11_control::handle_events(struct s_event_decl *events_decl) {
         throw excepts::error("This build completed without X11 support");
     }
 
-    void x11_windowing::action_button(int keysym, bool pressing) const {
+    void x11_control::action_button(int keysym, bool pressing) const {
         throw excepts::error("This build completed without X11 support");
     }
-/*********************[ }; //class x11_windowing : control_impl ]*********************/
+/*********************[ }; //class x11_control : control_impl ]*********************/
 
 #endif
 

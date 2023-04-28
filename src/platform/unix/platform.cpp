@@ -11,43 +11,45 @@
 
 namespace platform {
 
-std::shared_ptr<control_impl> user_windowing::make_api(e_windowings picked_api) {
+std::shared_ptr<control_impl> user_control::make_api(e_controls picked_api) {
     switch (picked_api){
-        case X11:
-            return std::make_shared<x11_windowing>();
+        case uinput:
+            return std::make_shared<uinput_control>();
             break;
-        case Wayland:
-            return std::make_shared<wayland_windowing>();
+        case X11:
+            return std::make_shared<x11_control>();
             break;
         default:
-            class none_windowing : public control_impl{
+            class none_control : public control_impl{
             public:
-                ~none_windowing() {}
+                ~none_control() {}
                 void init() override {
-                    throw excepts::error("Unix platform chooser returns empty implementations", "platform.cpp", "", "Is Xorg or Wayland running?");
+                    throw excepts::error("Unix platform chooser returns empty implementations", "platform.cpp", "", "Is Xorg running (if overrided)?");
                 }
                 void handle_events(s_event_decl *events_decl) override {}
                 void action_button(int keysym, bool pressing) const override {}
             };
-            return std::make_shared<none_windowing>();
+            return std::make_shared<none_control>();
     };
 };
 
 /// Returns shared_ptr to implementation class
 std::shared_ptr<control_impl> get_platform() {
-    user_windowing windowing;
-    if ((std::getenv("WAYLAND_DISPLAY") || override_wayland) && (!override_xorg)) {
-        #ifdef USE_WAYLAND
-            return windowing.make_api(Wayland);
+    user_control windowing;
+    if (!override_xorg) {
+        #ifdef USE_UINPUT
+            return windowing.make_api(uinput);
         #else
-            ui::warn("This build completed without Wayland support. Overriding X11.");
+            ui::warn("This build completed without uinput support. Overriding X11.");
             return windowing.make_api(X11);
         #endif
 
     } else if (std::getenv("DISPLAY") || override_xorg)
         return windowing.make_api(X11);
-    else
+    else {
+        ui::warn("env DISPLAY not set");
         return windowing.make_api(Empty);
+    }
 }
 
 } // namespace platform

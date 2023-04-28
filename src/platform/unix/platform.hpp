@@ -3,6 +3,12 @@
 #include <memory>
 #include "runtime.hpp"
 
+#ifdef USE_UINPUT
+    #include <libinput.h>
+    #include <unistd.h>
+    #include <fcntl.h>
+#endif
+
 #ifdef USE_X11
     #include <X11/Xlib.h>
     #include <X11/extensions/XTest.h>
@@ -15,13 +21,7 @@
     } s_XHeap;
 #endif
 
-#ifdef USE_WAYLAND
-    #include <libinput.h>
-    #include <unistd.h>
-    #include <fcntl.h>
-#endif
-
-enum e_windowings { X11, Wayland, Empty };
+enum e_controls { uinput, X11, Empty };
 
 namespace platform {
 
@@ -34,25 +34,11 @@ public:
     virtual void action_button(int keysym, bool pressing) const = 0;
 };
 
-class x11_windowing : public control_impl {
+class uinput_control : public control_impl {
 private:
-    #ifdef USE_X11
-        Display *lclDisplay;
-        Display *recDisplay;
-        int lclScreen;
-        Window rootWindow;
-        static void eventCallback(XPointer xheap, XRecordInterceptData *data);
-    #endif
-public:
-    ~x11_windowing();
-    void init();
-    void handle_events(s_event_decl *events_decl);
-    void action_button(int keysym, bool pressing) const;
-};
+    #ifdef USE_UINPUT
+        libinput* li;
 
-class wayland_windowing : public control_impl {
-private:
-    #ifdef USE_WAYLAND
         static int open_restricted(const char *path, int flags, void *user_data) {
             int fd = open(path, flags);
             return fd < 0 ? -errno : fd;
@@ -67,19 +53,35 @@ private:
             .close_restricted = close_restricted,
         };
 
-        libinput* li;
+
         int fd;
     #endif
 public:
-    ~wayland_windowing();
+    ~uinput_control();
     void init();
     void handle_events(s_event_decl *events_decl);
     void action_button(int keysym, bool pressing) const;
 };
 
-class user_windowing {
+class x11_control : public control_impl {
+private:
+    #ifdef USE_X11
+        Display *lclDisplay;
+        Display *recDisplay;
+        int lclScreen;
+        Window rootWindow;
+        static void eventCallback(XPointer xheap, XRecordInterceptData *data);
+    #endif
 public:
-    std::shared_ptr<control_impl> make_api(e_windowings picked_api = Empty);
+    ~x11_control();
+    void init();
+    void handle_events(s_event_decl *events_decl);
+    void action_button(int keysym, bool pressing) const;
+};
+
+class user_control {
+public:
+    std::shared_ptr<control_impl> make_api(e_controls picked_api = Empty);
 };
 
 std::shared_ptr<control_impl> get_platform();

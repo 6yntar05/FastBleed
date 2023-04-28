@@ -11,7 +11,7 @@ extern unsigned int actions_cooldown;
 extern std::string config_path;
 
 /// Runtime flags
-extern bool override_wayland, override_xorg, be_verbose;
+extern bool override_uinput, override_xorg, be_verbose;
 
 /// Available actions
 enum e_actions {

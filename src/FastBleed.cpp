@@ -20,7 +20,7 @@ unsigned int actions_cooldown   = c_actions_cooldown;
 std::string config_path         = c_config_path;
 
 // Runtime flags
-bool override_wayland   = false;
+bool override_uinput   = false;
 bool override_xorg      = false;
 bool be_verbose         = false;
 
