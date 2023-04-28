@@ -1,12 +1,14 @@
+#include "properties.hpp"
+#include "platform/unix/platform.hpp"
+#include "ui/feedback.hpp"
+#include "runtime.hpp"
+#include "excepts.hpp"
+#include <thread>
 #include <iostream>
 #include <stdexcept>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "platform/unix/platform.hpp"
-#include "ui/feedback.hpp"
-#include "runtime.hpp"
-#include <excepts.hpp>
 
 #ifdef USE_UINPUT
     #include <libinput.h>
@@ -73,6 +75,7 @@ static void setup_uinput_device(int& fd) {
     void uinput_control::handle_events(s_event_decl* events_decl) {
         // todo: get rid while true
         while (true) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(c_actions_cooldown));
             int rc = libinput_dispatch(li);
             if (rc != 0) { std::cerr << "dispatcher errors detected\n" << std::flush; break; }
             
@@ -95,6 +98,7 @@ static void setup_uinput_device(int& fd) {
                     // Match with triggers
                     for (auto& match_decl : *events_decl) {
                         if (!match_decl->was_mouse) break;
+                        std::cout << button_index << '\n';
                         if (button_index == EVDEV_MOUSEKEYS + match_decl->ev_button - 4)
                             match_decl->set_active(button_state);
                     }
@@ -108,6 +112,7 @@ static void setup_uinput_device(int& fd) {
     }
 
     void uinput_control::action_button(int keysym, bool pressing) const {
+        std::cout << keysym << ":" << pressing << '\n';
         input_event ie { {0, 0}, EV_KEY,
             static_cast<ushort>(EVDEV_MOUSEKEYS + keysym),
             pressing
