@@ -1,0 +1,14 @@
+{
+	"items": [
+		{
+			"trigger": 9,
+			"actions": ["CLICKER"],
+			"act_params": [1]
+		},
+		{
+			"trigger": 8,
+			"actions": ["CLICKER"],
+			"act_params": [2]
+		}
+	]
+}

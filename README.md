@@ -2,14 +2,12 @@
 Yet another lightweight CLIcker
 
 ###### Only for X11/UInput systems for now
+###### Handling only mouse for now (Uses additional mouse buttons by default)
 
 ## Building
 ### Dependencies (Optional):
-- X11
-  <br>and/or
-- libinput
-- libudev
-- linux
+- For X11: X11
+- For UInput: linux, libinput, libudev
 
 ### Building
 ```sh

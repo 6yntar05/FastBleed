@@ -12,7 +12,7 @@
 namespace platform {
 
 std::shared_ptr<control_impl> user_control::make_api(e_controls picked_api) {
-    switch (picked_api){
+    switch (picked_api) {
         case uinput:
             return std::make_shared<uinput_control>();
             break;

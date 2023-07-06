@@ -53,7 +53,6 @@ private:
             .close_restricted = close_restricted,
         };
 
-
         int fd;
     #endif
 public:

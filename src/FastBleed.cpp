@@ -20,13 +20,13 @@ unsigned int actions_cooldown   = c_actions_cooldown;
 std::string config_path         = c_config_path;
 
 // Runtime flags
-bool override_uinput   = false;
+bool override_uinput    = false;
 bool override_xorg      = false;
 bool be_verbose         = false;
 
 using control_ptr = const std::shared_ptr<platform::control_impl>;
 void signal_handler(int signum) { exit(signum); }
-void handle_actions(control_ptr control, utils::t_timings timings, s_event_decl *actions);
+void handle_actions (control_ptr control, utils::t_timings timings, s_event_decl *actions);
 void handler_wrapper(control_ptr control, s_event_decl* arg) { control->handle_events(arg); }
 
 int main(int argc, char* argv[]) {

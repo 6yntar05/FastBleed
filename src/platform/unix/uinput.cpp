@@ -12,20 +12,22 @@
 
 #ifdef USE_UINPUT
     #include <libinput.h>
+    #include <cstring>
+    #include <linux/input-event-codes.h>
+    #include <linux/input.h>
+    #include <linux/uinput.h>
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <fcntl.h>
+    #include <unistd.h>
 
-    //#if defined (LINUX) || defined(__linux__)  || defined(ANDROID)
-        #include <cstring>
-        #include <linux/input-event-codes.h>
-        #include <linux/input.h>
-        #include <linux/uinput.h>
-        #include <sys/types.h>
-        #include <sys/stat.h>
-        #include <fcntl.h>
-        #include <unistd.h>
-    //#else
-    //    #error uinput available only for linux kernel
-    //#endif
+    #if !(defined (LINUX) || defined(__linux__))
+        #pragma message("uinput available only for linux kernel")
+    #endif
 #endif
+
+constexpr unsigned int device_vendor  = 0x1234;
+constexpr unsigned int device_product = 0x5678;
 
 namespace platform {
 
@@ -45,8 +47,8 @@ static void setup_uinput_device(int& fd) {
     //ioctl(fd, UI_SET_RELBIT, REL_Y);
 
     usetup.id.bustype = BUS_USB;
-    usetup.id.vendor = 0x1234;
-    usetup.id.product = 0x5678;
+    usetup.id.vendor = device_vendor;
+    usetup.id.product = device_product;
 
     ioctl(fd, UI_DEV_SETUP, &usetup);
     ioctl(fd, UI_DEV_CREATE);
@@ -93,12 +95,13 @@ static void setup_uinput_device(int& fd) {
                     ptrev = libinput_event_get_pointer_event(event);
                     button_index = libinput_event_pointer_get_button(ptrev);
                     button_state = libinput_event_pointer_get_button_state(ptrev);
-                    //std::cout << button_index << "|" << button_state << '\n';
+                    #ifdef DEBUG
+                    std::cout << "RECIEVED: " << button_index << "|" << button_state << '\n';
+                    #endif
 
                     // Match with triggers
                     for (auto& match_decl : *events_decl) {
                         if (!match_decl->was_mouse) break;
-                        //std::cout << button_index << '\n';
                         if (button_index == EVDEV_MOUSEKEYS + match_decl->ev_button - 4)
                             match_decl->set_active(button_state);
                     }
@@ -112,7 +115,9 @@ static void setup_uinput_device(int& fd) {
     }
 
     void uinput_control::action_button(int keysym, bool pressing) const {
-        //std::cout << keysym << ":" << pressing << '\n';
+        #ifdef DEBUG
+        std::cout << keysym << ":" << pressing << '\n';
+        #endif
         input_event ie { {0, 0}, EV_KEY,
             static_cast<ushort>(EVDEV_MOUSEKEYS + keysym),
             pressing
