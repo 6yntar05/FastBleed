@@ -47,9 +47,9 @@ include_directories     (${PROJECT_SOURCE_DIR}/libs/simdjson/include)
 link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson/src)
 target_link_libraries   (${PROJECT_NAME} simdjson)
 
-### FMT ###
+### SPDLOG ###
 add_subdirectory        (./libs/spdlog)
-find_library            (simdjson HINTS "libs/spdlog/include")
+find_library            (spdlog HINTS "libs/spdlog/include")
 include_directories     (${PROJECT_SOURCE_DIR}/libs/spdlog/include)
 link_directories        (${PROJECT_SOURCE_DIR}/libs/spdlog/src)
 target_link_libraries   (${PROJECT_NAME} spdlog)
