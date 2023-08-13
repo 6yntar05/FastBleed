@@ -1,3 +1,6 @@
 [submodule "libs/simdjson"]
 	path = libs/simdjson
 	url = https://github.com/simdjson/simdjson
+[submodule "libs/spdlog"]
+	path = libs/spdlog
+	url = https://github.com/gabime/spdlog
