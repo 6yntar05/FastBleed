@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "excepts.hpp"
-#include "ui/feedback.hpp"
+#include "spdlog/spdlog.h"
 
 using std::string;
 
@@ -11,7 +11,7 @@ namespace excepts {
 error::error(const string msg, const string file, const string func, const string info) 
     : msg(msg), file(file), func(func), info(info) {
     // Show error
-    ui::error(msg);
+    spdlog::error(msg);
 
     // Construct what()
     this->what_string = "excepts::error\n";

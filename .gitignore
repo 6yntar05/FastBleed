@@ -3,6 +3,7 @@ cmake-build-*
 .vscode
 .cache
 libs/protocols
+meson.build
 
 # Prerequisites
 *.d

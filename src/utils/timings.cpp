@@ -1,8 +1,8 @@
 #include <cmath>
 #include <chrono>
 #include <random>
-#include <iostream>
 
+#include "spdlog/spdlog.h"
 #include "utils/timings.hpp"
 #include "properties.hpp"
 #include "runtime.hpp"
@@ -16,12 +16,12 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
 
     if (relation<=0) {
         relation = c_relation;
-        ui::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
+        spdlog::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
     }
 
     if (cps<=0) {
         cps = c_cps;
-        ui::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
+        spdlog::warn("CPS<=0! Built-in cps("+std::to_string(cps)+") value are used.");
     }
     float total_click_time = 1000.0f / cps;
 
@@ -48,13 +48,12 @@ t_timings calculate_timings(float cps, float relation, unsigned int entropy_vari
     }
 
     if (best == total_click_time) {
-        ui::warn("Failed to calculate timings! Fallback values are used.");
+        spdlog::warn("Failed to calculate timings! Fallback values are used.");
         return calculate_timings(c_cps, c_relation, c_entropy_variation);    // Incorrect build-in values can lead to looping recursion
     }
 
     if (be_verbose)
-        std::cerr << "[INFO ] Calculated timings => "
-            << ret.hold_time << "ms /" << ret.release_time << "ms" << std::endl;
+        spdlog::info("[INFO ] Calculated timings => {} / {} ms", ret.hold_time, ret.release_time);
 
     return ret;
 }

@@ -1,5 +1,5 @@
 #include "platform/unix/platform.hpp"
-#include "ui/feedback.hpp"
+#include "spdlog/spdlog.h"
 
 #include "runtime.hpp"
 #include "excepts.hpp"
@@ -47,7 +47,7 @@ std::shared_ptr<control_impl> get_platform() {
     } else if (std::getenv("DISPLAY") || override_xorg)
         return windowing.make_api(X11);
     else {
-        ui::warn("env DISPLAY not set");
+        spdlog::warn("env DISPLAY not set");
         return windowing.make_api(Empty);
     }
 }

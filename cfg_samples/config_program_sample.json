@@ -1,0 +1,14 @@
+{
+	"items": [
+		{
+			"trigger": 9,
+			"actions": ["CLICK", "DELAY", "RELEASE", "DELAY"],
+			"act_params": [1, 100, 1, 100]
+		},
+		{
+			"trigger": 8,
+			"actions": ["CLICK", "DELAY", "RELEASE", "DELAY"],
+			"act_params": [3, 100, 3, 100]
+		}
+	]
+}

@@ -4,8 +4,8 @@
 #include <csignal>
 #include <functional>
 
+#include "spdlog/spdlog.h"
 #include "utils/config.hpp"         // Config <-> FastBleed layer
-#include "ui/feedback.hpp"          // ui::info/warn/error
 #include "utils/args.hpp"           // utils::parse_args()
 #include "utils/timings.hpp"        // utils::calculate_timings()
 #include "platform/platform.hpp"    // platform::init() returns platform-non-specifically abstraction
@@ -32,6 +32,10 @@ void handler_wrapper(control_ptr control, s_event_decl* arg) { control->handle_e
 int main(int argc, char* argv[]) {
     utils::parse_args(argc, argv);
     utils::c_config config {config_path};
+    spdlog::set_pattern("[%^%l%$] %v");
+    #ifdef DEBUG
+        spdlog::set_level(spdlog::level::debug);
+    #endif
 
     // Pick platform-non-specifically abstraction
     control_ptr control = platform::get_platform();
@@ -49,7 +53,7 @@ int main(int argc, char* argv[]) {
 
     // Call events handler
     signal(SIGINT, signal_handler);
-    ui::msg("Starting action handler");
+    spdlog::info("Starting action handler");
     std::thread handler_thread(handler_wrapper, control, &events_decl);
     handler_thread.join();
 
@@ -72,6 +76,7 @@ void handle_actions(control_ptr control, utils::t_timings timings, s_event_decl 
             cooldown = true;
             for (const auto& action : macro->actions) switch (action.action) {
                 case ACT_CLICK: control->action_button(action.param , true); break;
+
                 case ACT_RELEASE: control->action_button(action.param , false);  break;
 
                 case ACT_CLICKER:

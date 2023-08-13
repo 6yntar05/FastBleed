@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include "runtime.hpp"
+#include "spdlog/spdlog.h"
 
 #ifdef USE_UINPUT
     #include <libinput.h>

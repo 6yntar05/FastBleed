@@ -1,8 +1,8 @@
 #include "properties.hpp"
 #include "platform/unix/platform.hpp"
-#include "ui/feedback.hpp"
 #include "runtime.hpp"
 #include "excepts.hpp"
+#include "spdlog/spdlog.h"
 #include <thread>
 #include <iostream>
 #include <stdexcept>
@@ -79,7 +79,7 @@ static void setup_uinput_device(int& fd) {
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(c_actions_cooldown));
             int rc = libinput_dispatch(li);
-            if (rc != 0) { std::cerr << "dispatcher errors detected\n" << std::flush; break; }
+            if (rc != 0) { spdlog::error("dispatcher errors detected"); break; }
             
             libinput_event* event = libinput_get_event(li);
             if (!event) continue;
@@ -95,9 +95,7 @@ static void setup_uinput_device(int& fd) {
                     ptrev = libinput_event_get_pointer_event(event);
                     button_index = libinput_event_pointer_get_button(ptrev);
                     button_state = libinput_event_pointer_get_button_state(ptrev);
-                    #ifdef DEBUG
-                    std::cout << "RECIEVED: " << button_index << "|" << button_state << '\n';
-                    #endif
+                    spdlog::debug("RECIEVED: {} | {}", button_index, button_state);
 
                     // Match with triggers
                     for (auto& match_decl : *events_decl) {
@@ -116,7 +114,7 @@ static void setup_uinput_device(int& fd) {
 
     void uinput_control::action_button(int keysym, bool pressing) const {
         #ifdef DEBUG
-        std::cout << keysym << ":" << pressing << '\n';
+        spdlog::debug("{} : {}", keysym, pressing);
         #endif
         input_event ie { {0, 0}, EV_KEY,
             static_cast<ushort>(EVDEV_MOUSEKEYS + keysym),

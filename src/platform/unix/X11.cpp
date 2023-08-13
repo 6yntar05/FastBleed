@@ -4,7 +4,6 @@
 #include <thread>
 #include <iostream>
 #include "platform/unix/platform.hpp"
-#include "ui/feedback.hpp"
 #include "runtime.hpp"
 #include "excepts.hpp"
 

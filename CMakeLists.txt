@@ -43,11 +43,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE ./src)
 ### SIMDJSON ###
 add_subdirectory        (./libs/simdjson)
 find_library            (simdjson HINTS "libs/simdjson/include")
-include_directories     (${PROJECT_SOURCE_DIR}/libs/simdjson)
 include_directories     (${PROJECT_SOURCE_DIR}/libs/simdjson/include)
-link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson)
 link_directories        (${PROJECT_SOURCE_DIR}/libs/simdjson/src)
 target_link_libraries   (${PROJECT_NAME} simdjson)
+
+### FMT ###
+add_subdirectory        (./libs/spdlog)
+find_library            (simdjson HINTS "libs/spdlog/include")
+include_directories     (${PROJECT_SOURCE_DIR}/libs/spdlog/include)
+link_directories        (${PROJECT_SOURCE_DIR}/libs/spdlog/src)
+target_link_libraries   (${PROJECT_NAME} spdlog)
 
 ### PLATFORM-SPECIFIC BLOCK ###
 message (">> >> Platform-specific configuration")

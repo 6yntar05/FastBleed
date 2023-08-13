@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "runtime.hpp"
-#include "ui/feedback.hpp"
+#include "spdlog/spdlog.h"
 
 namespace utils {
 
@@ -25,7 +25,7 @@ private:
         umap["TEXT_TYPE"] = ACT_TEXT_TYPE; // TODO: binder??
 
         if (umap.find(str) == umap.end())
-            ui::error("Config syntax error : Invalid action \"" + str + "\"");
+            spdlog::error("Config syntax error : Invalid action \"" + str + "\"");
 
         return umap.at(str);
     }
