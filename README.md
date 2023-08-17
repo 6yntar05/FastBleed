@@ -22,7 +22,6 @@ cmake --build ./ -j$(nproc)
 ### CMake options
 - `-DUSE_UINPUT=ON/OFF`           # Include compile uinput implementation
 - `-DUSE_X11=ON/OFF`              # Include X11 libraries and compile X11 implementation
-- `-DUSE_COLORS=ON/OFF`           # Use colorful output
 
 ## Usage
 ```sh

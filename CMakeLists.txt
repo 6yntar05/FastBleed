@@ -57,11 +57,6 @@ target_link_libraries   (${PROJECT_NAME} spdlog)
 ### PLATFORM-SPECIFIC BLOCK ###
 message (">> >> Platform-specific configuration")
 if (UNIX)
-    option(USE_COLORS "Use colorful output" ON) 
-    if (USE_COLORS)
-        add_compile_definitions (USE_COLORS)
-    endif ()
-
     option(USE_X11 "Include X11 libraries and compile X11 implementation" ON)
     message(">> Finding X11")
     find_package(X11 QUIET COMPONENTS Xtst)
@@ -92,14 +87,9 @@ if (UNIX)
     endif ()
 
 elseif (WIN32)
-    option(USE_COLORS "Use colorful output" OFF)
-    message("Windows is not supported for now.")
+    message(FATAL_ERROR "Windows is not supported for now.")
     
 elseif (APPLE)
-    option(USE_COLORS "Use colorful output" ON)
-    if (USE_COLORS)
-        add_compile_definitions (USE_COLORS)
-    endif ()
     message(FATAL_ERROR "Apple is not supported for now.")
 
 endif ()
